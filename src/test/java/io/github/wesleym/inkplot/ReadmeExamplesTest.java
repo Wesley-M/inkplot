@@ -1,6 +1,6 @@
 package io.github.wesleym.inkplot;
 
-import io.github.wesleym.inkplot.data.ResultSnapshot;
+import io.github.wesleym.inkplot.data.Table;
 import org.junit.jupiter.api.Test;
 
 import javax.imageio.ImageIO;
@@ -108,9 +108,8 @@ class ReadmeExamplesTest {
 			int r = rng.nextInt(4);
 			rows.add(List.of(regions[r], String.format("%.2f", base[r] + rng.nextGaussian() * 9)));
 		}
-		ResultSnapshot table = new ResultSnapshot(
-				List.of("region", "amount"), List.of("varchar", "numeric"), rows, false);
-		Chart chart = Charts.auto(table).title("Revenue by region", "4,000 rows");
+		Table table = Table.of(List.of("region", "amount"), rows);
+		Chart chart = Charts.bar(table, "region", "amount").title("Revenue by region", "4,000 rows");
 		write("readme-auto", chart, 640, 400);
 	}
 

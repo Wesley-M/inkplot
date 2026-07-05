@@ -13,8 +13,13 @@ import java.util.List;
  * @param rows      the data as fetched: one string list per row
  * @param truncated whether the source was capped upstream, so charts present themselves as a sample
  */
-public record ResultSnapshot(List<String> columns, List<String> types, List<List<String>> rows,
+public record Table(List<String> columns, List<String> types, List<List<String>> rows,
 		boolean truncated) {
+
+	/** The common case: no declared types (values are sniffed from the rows) and nothing truncated upstream. */
+	public static Table of(List<String> columns, List<List<String>> rows) {
+		return new Table(columns, null, rows, false);
+	}
 
 	public int columnCount() {
 		return columns.size();
@@ -30,5 +35,19 @@ public record ResultSnapshot(List<String> columns, List<String> types, List<List
 
 	public String columnType(int col) {
 		return types != null && col >= 0 && col < types.size() ? types.get(col) : "";
+	}
+
+	/**
+	 * The index of the named column, matched case-insensitively and trimmed. A miss fails fast with the
+	 * table's real column names, so a typo reads as a typo — never as a blank chart.
+	 */
+	public int column(String name) {
+		for (int i = 0; i < columns.size(); i++) {
+			if (columns.get(i).equalsIgnoreCase(name.trim())) {
+				return i;
+			}
+		}
+		throw new IllegalArgumentException(
+				"no column named '" + name + "' — this table has: " + String.join(", ", columns));
 	}
 }

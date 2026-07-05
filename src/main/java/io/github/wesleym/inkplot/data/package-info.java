@@ -1,7 +1,7 @@
 /**
  * The tabular layer: a table of strings in, ready-to-draw chart data out.
  *
- * <p>{@link io.github.wesleym.inkplot.data.ResultSnapshot} is the seam — column names, optional type
+ * <p>{@link io.github.wesleym.inkplot.data.Table} is the seam — column names, optional type
  * names, string rows. From there: {@link io.github.wesleym.inkplot.data.ChartColumns} classifies each
  * column into chart roles (numeric / temporal / categorical, sniffing values when types are missing),
  * {@link io.github.wesleym.inkplot.data.ChartAuto} suggests the right chart form for the table's shape,

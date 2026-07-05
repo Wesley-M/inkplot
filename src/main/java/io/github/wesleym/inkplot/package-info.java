@@ -2,7 +2,7 @@
  * inkplot's front door and widget layer.
  *
  * <p>Most callers need exactly two names: the {@link io.github.wesleym.inkplot.Charts} factories build a
- * chart from plain values (or a tabular {@link io.github.wesleym.inkplot.data.ResultSnapshot}) and return
+ * chart from plain values (or a tabular {@link io.github.wesleym.inkplot.data.Table}) and return
  * a fluent {@link io.github.wesleym.inkplot.Chart}; its {@code component()} is a live Swing widget, its
  * {@code image(w, h)} a headless render.
  *

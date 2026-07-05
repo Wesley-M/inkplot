@@ -1,7 +1,7 @@
 package io.github.wesleym.inkplot;
 
 import io.github.wesleym.inkplot.data.ChartData;
-import io.github.wesleym.inkplot.data.ResultSnapshot;
+import io.github.wesleym.inkplot.data.Table;
 import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
@@ -52,7 +52,7 @@ class ChartsFacadeTest {
 		for (int i = 0; i < 40; i++) {
 			rows.add(List.of("region-" + (i % 4), String.valueOf(10 + i)));
 		}
-		Chart chart = Charts.auto(new ResultSnapshot(
+		Chart chart = Charts.auto(new Table(
 				List.of("region", "amount"), List.of("varchar", "int"), rows, false));
 		assertInstanceOf(ChartData.Bar.class, chart.data(), "category + measure suggests bars");
 	}

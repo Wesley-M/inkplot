@@ -28,7 +28,7 @@ public final class ChartDataPipeline {
 	 * {@code onError}) on the EDT — unless a newer request superseded this one first, in which case the result is
 	 * dropped. {@code plotWidth} sizes pixel-aware downsampling.
 	 */
-	public void prepare(ChartSpec spec, ResultSnapshot snapshot, int plotWidth, Consumer<ChartData> onReady,
+	public void prepare(ChartSpec spec, Table snapshot, int plotWidth, Consumer<ChartData> onReady,
 			Consumer<String> onError) {
 		int mine = generation.incrementAndGet();
 		try {
@@ -40,7 +40,7 @@ public final class ChartDataPipeline {
 		}
 	}
 
-	private void submit(ChartSpec spec, ResultSnapshot snapshot, int plotWidth, Consumer<ChartData> onReady,
+	private void submit(ChartSpec spec, Table snapshot, int plotWidth, Consumer<ChartData> onReady,
 			Consumer<String> onError, int mine) {
 		worker.submit(() -> {
 			try {

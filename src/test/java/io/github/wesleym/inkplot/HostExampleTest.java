@@ -3,7 +3,7 @@ package io.github.wesleym.inkplot;
 import io.github.wesleym.inkplot.data.ChartAuto;
 import io.github.wesleym.inkplot.data.ChartColumns;
 import io.github.wesleym.inkplot.data.ChartDataPipeline;
-import io.github.wesleym.inkplot.data.ResultSnapshot;
+import io.github.wesleym.inkplot.data.Table;
 import io.github.wesleym.inkplot.spec.ChartSpec;
 import io.github.wesleym.inkplot.spec.ChartSpecs;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class HostExampleTest {
 
 	@Test
 	void aLongLivedCanvasFedByThePipeline() throws Exception {
-		ResultSnapshot table = ordersTable();
+		Table table = ordersTable();
 		JLabel statusBar = new JLabel();
 
 		// One canvas for the lifetime of the view; prepared data swaps in place.
@@ -57,11 +57,11 @@ class HostExampleTest {
 		}
 	}
 
-	private static ResultSnapshot ordersTable() {
+	private static Table ordersTable() {
 		List<List<String>> rows = new ArrayList<>();
 		for (int i = 0; i < 200; i++) {
 			rows.add(List.of("region-" + (i % 4), String.valueOf(20 + i % 60)));
 		}
-		return new ResultSnapshot(List.of("region", "amount"), List.of("varchar", "int"), rows, false);
+		return Table.of(List.of("region", "amount"), rows);
 	}
 }

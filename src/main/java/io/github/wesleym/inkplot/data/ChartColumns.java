@@ -17,12 +17,12 @@ public final class ChartColumns {
 	private static final double SNIFF_RATIO = 0.9;     // this share of sampled values must match the role
 	private static final int CATEGORY_DISTINCT_CAP = 40;
 
-	private final ResultSnapshot snapshot;
+	private final Table snapshot;
 	private final boolean[] numeric;
 	private final boolean[] temporal;
 	private final boolean[] categorical;
 
-	public ChartColumns(ResultSnapshot snapshot) {
+	public ChartColumns(Table snapshot) {
 		this.snapshot = snapshot;
 		int n = snapshot.columnCount();
 		this.numeric = new boolean[n];

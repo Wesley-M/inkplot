@@ -3,7 +3,7 @@ package io.github.wesleym.inkplot;
 import io.github.wesleym.inkplot.data.ChartBuilder;
 import io.github.wesleym.inkplot.data.ChartColumns;
 import io.github.wesleym.inkplot.data.ChartData;
-import io.github.wesleym.inkplot.data.ResultSnapshot;
+import io.github.wesleym.inkplot.data.Table;
 import io.github.wesleym.inkplot.spec.Aggregate;
 import io.github.wesleym.inkplot.spec.ChartSpec;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class ChartIntegrationPreviewTest {
 	@Test
 	void realRowsBuildAndRender() throws Exception {
 		ChartTheme theme = ChartTheme.PAPER;
-		ResultSnapshot orders = orders();
+		Table orders = orders();
 
 		ChartData bar = ChartBuilder.build(new ChartSpec.Bar(1, 2, Aggregate.SUM, null, false), orders, 640);
 		ChartRenderPreviewTest.render(new ChartRenderPreviewTest.NamedTheme("light", theme), "integ-bar", bar);
@@ -66,7 +66,7 @@ class ChartIntegrationPreviewTest {
 			rows.add(List.of(r[0], r[1]));
 		}
 		// Untyped columns (as string-only sources return them) — the timestamp must sniff as temporal despite the precision.
-		ResultSnapshot s = new ResultSnapshot(List.of("ts", "count"), List.of("", ""), rows, false);
+		Table s = new Table(List.of("ts", "count"), List.of("", ""), rows, false);
 		ChartColumns cols = new ChartColumns(s);
 		assertTrue(cols.isTemporal(0), "the over-precise timestamp column classifies as temporal");
 
@@ -77,7 +77,7 @@ class ChartIntegrationPreviewTest {
 	}
 
 	// A realistic untyped result: date, region, amount as plain strings (as CSV or string-only JDBC hands them over).
-	private static ResultSnapshot orders() {
+	private static Table orders() {
 		Random rng = new Random(11);
 		String[] regions = { "North", "South", "East", "West" };
 		List<List<String>> rows = new ArrayList<>();
@@ -89,7 +89,7 @@ class ChartIntegrationPreviewTest {
 			String amount = String.format("%.2f", Math.abs(rng.nextGaussian() * 40 + 120));
 			rows.add(List.of(date, region, amount));
 		}
-		return new ResultSnapshot(List.of("created", "region", "amount"),
+		return new Table(List.of("created", "region", "amount"),
 				List.of("", "", ""), rows, true);
 	}
 }

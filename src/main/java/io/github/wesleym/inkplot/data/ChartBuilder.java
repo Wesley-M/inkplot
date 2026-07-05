@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.TreeMap;
 
 /**
- * Turns a {@link ChartSpec} and a {@link ResultSnapshot} into the prepared, primitive-array {@link ChartData} a
+ * Turns a {@link ChartSpec} and a {@link Table} into the prepared, primitive-array {@link ChartData} a
  * renderer draws — the one place that reads the string rows. Every path is bounded by {@link ChartLimits}: columns
  * extract into capped arrays, categories fold into "Other", scatter is stride-sampled, and each result carries a
  * {@link Provenance} recording exactly what was left out. Runs off the EDT (see {@link ChartDataPipeline}).
@@ -22,7 +22,7 @@ public final class ChartBuilder {
 
 	private ChartBuilder() { }
 
-	public static ChartData build(ChartSpec spec, ResultSnapshot snapshot, int plotWidth) {
+	public static ChartData build(ChartSpec spec, Table snapshot, int plotWidth) {
 		return switch (spec) {
 			case ChartSpec.Bar bar -> bar(snapshot, bar);
 			case ChartSpec.Doughnut doughnut -> doughnut(snapshot, doughnut);
@@ -38,7 +38,7 @@ public final class ChartBuilder {
 
 	// ---- bar -----------------------------------------------------------------------------------------
 
-	private static ChartData.Bar bar(ResultSnapshot s, ChartSpec.Bar spec) {
+	private static ChartData.Bar bar(Table s, ChartSpec.Bar spec) {
 		List<List<String>> rows = s.rows();
 		// Colouring bars by their own category (series == the category column) is one full-width bar per category,
 		// each a distinct colour — not a grouped bar split into empty per-series slots.
@@ -166,19 +166,19 @@ public final class ChartBuilder {
 
 	// ---- doughnut / waffle (shares of a whole) ---------------------------------------------------------
 
-	private static ChartData.Doughnut doughnut(ResultSnapshot s, ChartSpec.Doughnut spec) {
+	private static ChartData.Doughnut doughnut(Table s, ChartSpec.Doughnut spec) {
 		Shares shares = shares(s, spec.x(), spec.y(), "doughnut",
 				shareCap(spec.maxSlices(), ChartLimits.MAX_DOUGHNUT_SLICES));
 		return new ChartData.Doughnut(shares.labels(), shares.values(), shares.valueLabel(), shares.provenance());
 	}
 
-	private static ChartData.Waffle waffle(ResultSnapshot s, ChartSpec.Waffle spec) {
+	private static ChartData.Waffle waffle(Table s, ChartSpec.Waffle spec) {
 		Shares shares = shares(s, spec.x(), spec.y(), "waffle",
 				shareCap(spec.maxCategories(), ChartLimits.MAX_WAFFLE_CATEGORIES));
 		return new ChartData.Waffle(shares.labels(), shares.values(), shares.valueLabel(), shares.provenance());
 	}
 
-	private static ChartData.Treemap treemap(ResultSnapshot s, ChartSpec.Treemap spec) {
+	private static ChartData.Treemap treemap(Table s, ChartSpec.Treemap spec) {
 		Shares shares = shares(s, spec.x(), spec.y(), "treemap",
 				shareCap(spec.maxCategories(), ChartLimits.MAX_TREEMAP_TILES));
 		return new ChartData.Treemap(shares.labels(), shares.values(), shares.valueLabel(), shares.provenance());
@@ -193,7 +193,7 @@ public final class ChartBuilder {
 	/** The prepared shares-of-a-whole both radial-ish charts draw: positive values, largest-first, "Other" last. */
 	private record Shares(String[] labels, double[] values, String valueLabel, Provenance provenance) { }
 
-	private static Shares shares(ResultSnapshot s, int x, Integer y, String chartName, int maxCategories) {
+	private static Shares shares(Table s, int x, Integer y, String chartName, int maxCategories) {
 		List<List<String>> rows = s.rows();
 		CategoryKeyer cats = new CategoryKeyer(ChartLimits.MAX_CATEGORY_SCAN);
 		for (List<String> row : rows) {
@@ -269,7 +269,7 @@ public final class ChartBuilder {
 
 	// ---- line ----------------------------------------------------------------------------------------
 
-	private static ChartData.Line line(ResultSnapshot s, ChartSpec.Line spec) {
+	private static ChartData.Line line(Table s, ChartSpec.Line spec) {
 		boolean xTime = new ChartColumns(s).isTemporal(spec.x());
 		List<List<String>> rows = s.rows();
 		CategoryKeyer seriesKeyer = spec.series() != null ? new CategoryKeyer(ChartLimits.MAX_CATEGORY_SCAN) : null;
@@ -357,13 +357,13 @@ public final class ChartBuilder {
 
 	// ---- histogram / density -------------------------------------------------------------------------
 
-	private static ChartData.Histogram histogram(ResultSnapshot s, ChartSpec.Histogram spec) {
+	private static ChartData.Histogram histogram(Table s, ChartSpec.Histogram spec) {
 		ChartExtract.Column col = ChartExtract.numeric(s.rows(), spec.value(), ChartLimits.MAX_VALUES_PER_COLUMN);
 		Binning.Result bins = Binning.bins(col.values(), spec.bins());
 		return new ChartData.Histogram(bins.edges(), bins.counts(), provenanceFor(s, col, null));
 	}
 
-	private static ChartData.Density density(ResultSnapshot s, ChartSpec.Density spec) {
+	private static ChartData.Density density(Table s, ChartSpec.Density spec) {
 		ChartExtract.Column col = ChartExtract.numeric(s.rows(), spec.value(), ChartLimits.MAX_VALUES_PER_COLUMN);
 		Kde.Result kde = Kde.estimate(col.values(), spec.bandwidthFactor(), ChartLimits.KDE_GRID);
 		int sampled = Math.min(col.values().length, ChartLimits.KDE_SAMPLE);
@@ -376,7 +376,7 @@ public final class ChartBuilder {
 
 	// ---- scatter -------------------------------------------------------------------------------------
 
-	private static ChartData.Scatter scatter(ResultSnapshot s, ChartSpec.Scatter spec) {
+	private static ChartData.Scatter scatter(Table s, ChartSpec.Scatter spec) {
 		boolean xTime = new ChartColumns(s).isTemporal(spec.x());
 		ScatterRows rows = scatterRows(s, spec, xTime);
 		int[] keep = ChartExtract.stride(rows.x().length, ChartLimits.MAX_SCATTER_POINTS);
@@ -391,7 +391,7 @@ public final class ChartBuilder {
 
 	private record ScatterRows(double[] x, double[] y, int[] series, String[] seriesNames, int skipped, int overCap) { }
 
-	private static ScatterRows scatterRows(ResultSnapshot s, ChartSpec.Scatter spec, boolean xTime) {
+	private static ScatterRows scatterRows(Table s, ChartSpec.Scatter spec, boolean xTime) {
 		int cap = ChartLimits.MAX_VALUES_PER_COLUMN;
 		int size = Math.min(s.rows().size(), cap);
 		double[] xs = new double[size];
@@ -452,7 +452,7 @@ public final class ChartBuilder {
 
 	// ---- box -----------------------------------------------------------------------------------------
 
-	private static ChartData.Box box(ResultSnapshot s, ChartSpec.Box spec) {
+	private static ChartData.Box box(Table s, ChartSpec.Box spec) {
 		if (spec.group() == null) {
 			ChartExtract.Column col = ChartExtract.numeric(s.rows(), spec.value(), ChartLimits.MAX_VALUES_PER_COLUMN);
 			ChartData.Box.Group group = BoxStats.summarize(s.columnName(spec.value()), col.values(),
@@ -489,7 +489,7 @@ public final class ChartBuilder {
 
 	// ---- shared helpers ------------------------------------------------------------------------------
 
-	private static Provenance provenanceFor(ResultSnapshot s, ChartExtract.Column col, String capNote) {
+	private static Provenance provenanceFor(Table s, ChartExtract.Column col, String capNote) {
 		String note = capNote;
 		if (note == null && col.overCap() > 0) {
 			note = "charted the first " + ChartFormat.grouped(col.values().length)
@@ -513,7 +513,7 @@ public final class ChartBuilder {
 		return new ChartData.Line.Series(name, sx, sy);
 	}
 
-	private static String name(Resolved serR, int ser, ResultSnapshot s, int yCol) {
+	private static String name(Resolved serR, int ser, Table s, int yCol) {
 		return serR != null ? serR.labels()[ser] : s.columnName(yCol);
 	}
 

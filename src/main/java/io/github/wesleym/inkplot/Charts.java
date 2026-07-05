@@ -6,7 +6,8 @@ import io.github.wesleym.inkplot.data.ChartBuilder;
 import io.github.wesleym.inkplot.data.ChartColumns;
 import io.github.wesleym.inkplot.data.ChartData;
 import io.github.wesleym.inkplot.data.Provenance;
-import io.github.wesleym.inkplot.data.ResultSnapshot;
+import io.github.wesleym.inkplot.data.Table;
+import io.github.wesleym.inkplot.spec.Aggregate;
 import io.github.wesleym.inkplot.spec.ChartSpec;
 import io.github.wesleym.inkplot.spec.ChartSpecs;
 
@@ -22,8 +23,16 @@ import io.github.wesleym.inkplot.spec.ChartSpecs;
  *         .component());
  * }</pre>
  *
- * For tabular data (query results, CSVs), wrap it in a {@link ResultSnapshot} and let {@link #auto} pick
- * the best form, or drive the full pipeline with a {@link ChartSpec} via {@link #of(ResultSnapshot, ChartSpec)}.
+ * For tabular data (query results, CSVs), wrap the rows in a {@link Table} and address columns by name,
+ * the way a data-analysis library would:
+ *
+ * <pre>{@code
+ * Table table = Table.of(List.of("region", "amount"), rows);
+ * panel.add(Charts.bar(table, "region", "amount").title("Revenue by region").component());
+ * }</pre>
+ *
+ * {@link #auto} picks the best form for a table's shape; a {@link ChartSpec} via
+ * {@link #of(Table, ChartSpec)} drives the pipeline explicitly (series splits, ordering, bin counts).
  */
 public final class Charts {
 
@@ -97,13 +106,90 @@ public final class Charts {
 				Provenance.full(categories.length)));
 	}
 
+	// ---- charts over a Table, columns addressed by name ------------------------------------------------
+
+	/** A bar per {@code category} value, counting rows; refine with {@code by}/{@code stacked}/{@code horizontal}. */
+	public static TableBarChart bar(Table table, String category) {
+		return new TableBarChart(table, table.column(category), null, Aggregate.COUNT);
+	}
+
+	/** A bar per {@code category} value, summing {@code value}. */
+	public static TableBarChart bar(Table table, String category, String value) {
+		return bar(table, category, value, Aggregate.SUM);
+	}
+
+	/** A bar per {@code category} value, reducing {@code value} with {@code agg}. */
+	public static TableBarChart bar(Table table, String category, String value, Aggregate agg) {
+		return new TableBarChart(table, table.column(category), table.column(value), agg);
+	}
+
+	/** A line of {@code y} over {@code x} (numbers or timestamps); refine with {@code by}/{@code points}. */
+	public static TableLineChart line(Table table, String x, String y) {
+		return new TableLineChart(table, table.column(x), table.column(y));
+	}
+
+	/** Points of {@code y} against {@code x}; colour by another column with {@code by}. */
+	public static TableScatterChart scatter(Table table, String x, String y) {
+		return new TableScatterChart(table, table.column(x), table.column(y));
+	}
+
+	/** Shares of a whole: a slice per {@code category} value, counting rows. */
+	public static Chart doughnut(Table table, String category) {
+		return of(table, new ChartSpec.Doughnut(table.column(category), null));
+	}
+
+	/** Shares of a whole: a slice per {@code category} value, summing {@code value}. */
+	public static Chart doughnut(Table table, String category, String value) {
+		return of(table, new ChartSpec.Doughnut(table.column(category), table.column(value)));
+	}
+
+	/** The same shares as proportional tiles, counting rows (or summing {@code value} in the overload). */
+	public static Chart treemap(Table table, String category) {
+		return of(table, new ChartSpec.Treemap(table.column(category), null));
+	}
+
+	public static Chart treemap(Table table, String category, String value) {
+		return of(table, new ChartSpec.Treemap(table.column(category), table.column(value)));
+	}
+
+	/** The same shares as a unit grid, counting rows (or summing {@code value} in the overload). */
+	public static Chart waffle(Table table, String category) {
+		return of(table, new ChartSpec.Waffle(table.column(category), null));
+	}
+
+	public static Chart waffle(Table table, String category, String value) {
+		return of(table, new ChartSpec.Waffle(table.column(category), table.column(value)));
+	}
+
+	/** The distribution of {@code value}, binned automatically. */
+	public static Chart histogram(Table table, String value) {
+		return of(table, new ChartSpec.Histogram(table.column(value), 0));
+	}
+
+	/** The distribution of {@code value} as a smooth density curve. */
+	public static Chart density(Table table, String value) {
+		return of(table, new ChartSpec.Density(table.column(value), 1.0));
+	}
+
+	/** A box-and-whisker summary of {@code value}. */
+	public static Chart box(Table table, String value) {
+		return of(table, new ChartSpec.Box(table.column(value), null));
+	}
+
+	/** A box of {@code value} per {@code group} value. */
+	public static Chart box(Table table, String value, String group) {
+		return of(table, new ChartSpec.Box(table.column(value), table.column(group)));
+	}
+
+	// ---- the power path --------------------------------------------------------------------------------
+
 	/** A chart from data already prepared by the pipeline — the power path. */
 	public static Chart of(ChartData data) {
 		return new Chart(data);
 	}
 
 	/** The best-guess chart for a tabular result: columns are classified, a form is suggested, and built. */
-	public static Chart auto(ResultSnapshot snapshot) {
+	public static Chart auto(Table snapshot) {
 		ChartColumns columns = new ChartColumns(snapshot);
 		ChartSpec spec = ChartSpecs.initial(ChartAuto.suggest(columns), columns);
 		if (spec == null) {
@@ -113,7 +199,7 @@ public final class Charts {
 	}
 
 	/** A chart built from a tabular result by an explicit {@link ChartSpec} — axes, aggregate, split. */
-	public static Chart of(ResultSnapshot snapshot, ChartSpec spec) {
+	public static Chart of(Table snapshot, ChartSpec spec) {
 		return new Chart(ChartBuilder.build(spec, snapshot, 0));
 	}
 }

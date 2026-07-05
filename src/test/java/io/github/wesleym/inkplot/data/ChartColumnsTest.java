@@ -10,13 +10,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChartColumnsTest {
 
-	private static ResultSnapshot snapshot(List<String> columns, List<String> types, List<List<String>> rows) {
-		return new ResultSnapshot(columns, types, rows, false);
+	private static Table snapshot(List<String> columns, List<String> types, List<List<String>> rows) {
+		return new Table(columns, types, rows, false);
 	}
 
 	@Test
 	void classifiesFromDeclaredTypes() {
-		ResultSnapshot s = snapshot(
+		Table s = snapshot(
 				List.of("id", "name", "created", "amount"),
 				List.of("int4", "varchar", "timestamp", "numeric"),
 				List.of(List.of("1", "Ann", "2026-01-01 00:00:00", "9.5")));
@@ -35,7 +35,7 @@ class ChartColumnsTest {
 			rows.add(List.of(String.valueOf(i * 3), "2026-02-" + String.format("%02d", 1 + i % 27), "label" + i));
 		}
 		// No declared types (untyped sources return none) — roles must come from value sniffing.
-		ResultSnapshot s = snapshot(List.of("n", "d", "t"), List.of("", "", ""), rows);
+		Table s = snapshot(List.of("n", "d", "t"), List.of("", "", ""), rows);
 		ChartColumns c = new ChartColumns(s);
 		assertTrue(c.isNumeric(0), "all-numeric column sniffs numeric");
 		assertTrue(c.isTemporal(1), "date-shaped column sniffs temporal");
@@ -48,7 +48,7 @@ class ChartColumnsTest {
 		for (int i = 0; i < 300; i++) {
 			rows.add(List.of(String.valueOf(i)));   // 300 distinct numbers
 		}
-		ResultSnapshot s = snapshot(List.of("x"), List.of(""), rows);
+		Table s = snapshot(List.of("x"), List.of(""), rows);
 		ChartColumns c = new ChartColumns(s);
 		assertTrue(c.isNumeric(0));
 		assertFalse(c.isCategorical(0), "a high-cardinality numeric is not a category axis");

@@ -129,28 +129,31 @@ Charts.bar("Q1", "Q2", "Q3", "Q4")
 
 ## Table in, chart out
 
-For query results, CSVs, or any table of strings, wrap the rows in a `ResultSnapshot`. inkplot classifies
-the columns (declared types are hints; untyped columns are sniffed from their values, including messy
-real-world timestamps), suggests the right form, and builds it:
+For query results, CSVs, or any table of strings: wrap the rows in a `Table` and address columns **by
+name**, the way a data-analysis library would. Values are interpreted per chart — numbers, timestamps
+(including messy real-world ones), and categories are sniffed as needed:
 
 ```java
-ResultSnapshot table = new ResultSnapshot(
-        List.of("region", "amount"), List.of("varchar", "numeric"), rows, false);
-Charts.auto(table).title("Revenue by region", "4,000 rows").component();
+Table table = Table.of(List.of("region", "amount"), rows);
+Charts.bar(table, "region", "amount").title("Revenue by region", "4,000 rows").component();
 ```
 
-<img src="docs/readme-auto.png" width="640" alt="Auto-suggested bar chart from a table of strings">
+<img src="docs/readme-auto.png" width="640" alt="Bar chart built from a table by column names">
 
-Or drive the pipeline explicitly with a `ChartSpec` — which columns are the axes, the aggregate
-(count / sum / avg / min / max), an optional series split:
+One factory per question — `bar`, `line`, `scatter`, `histogram`, `density`, `doughnut`, `treemap`,
+`waffle`, `box` — with refinements where the form wants them, and `Charts.auto(table)` when you'd
+rather inkplot picked:
 
 ```java
-ChartSpec spec = new ChartSpec.Bar(regionCol, amountCol, Aggregate.SUM, null, false);
-Charts.of(table, spec).component();
+Charts.bar(table, "quarter", "signups").by("channel").stacked();   // split + stack by a column
+Charts.line(table, "created", "amount").by("region");              // one line per region
+Charts.scatter(table, "spend", "activation").by("plan");           // coloured cohorts
 ```
 
-The pipeline is honest about coverage by design: a truncated result, a point cap, or dropped non-numeric
-cells surface as a quiet figure note on the chart — a partial picture is never presented as the whole.
+A typo'd column name fails fast with the table's real names — never a blank chart. And the pipeline is
+honest about coverage by design: a truncated result, a point cap, or dropped non-numeric cells surface
+as a quiet figure note on the chart. The full tour — specs, column classification, provenance — is in
+the [charting tables guide](docs/charting-tables.md).
 
 ## Interaction
 
@@ -229,32 +232,30 @@ box-and-whisker, doughnut, waffle, and treemap — plus a proportion strip for c
 
 ## Building an interactive host
 
-The factories cover embed-a-chart. When you're building a chart *view* — pickers, live re-queries, a
-chart that stays on screen and reconfigures — hold the widget and feed it through the async pipeline
-(this is exactly how the database console inkplot was extracted from drives its explorer):
+When you're building a chart *view* — pickers, live re-queries, a chart that stays on screen and
+reconfigures — hold the widget and feed it through the async pipeline:
 
 ```java
-// One canvas for the lifetime of the view; prepared data swaps in place.
-ChartCanvas canvas = new ChartCanvas(ChartTheme.PAPER);
-ChartDataPipeline pipeline = new ChartDataPipeline();
+ChartCanvas canvas = new ChartCanvas(ChartTheme.PAPER);      // lives as long as the view
+ChartDataPipeline pipeline = new ChartDataPipeline();        // off-EDT prep, EDT delivery
 
-// Classify the columns once, suggest a form, and derive a starting spec from them.
-ChartColumns columns = new ChartColumns(table);
-ChartSpec spec = ChartSpecs.initial(ChartAuto.suggest(columns), columns);
-
-// Rebuild off the EDT whenever a picker changes; superseded builds are dropped, errors land
-// as a message instead of a broken chart.
-pipeline.prepare(spec, table, canvas.getWidth(),
+pipeline.prepare(spec, table, canvas.getWidth(),             // on every picker change
         canvas::setData,
         statusBar::setText);
 ```
 
-`ChartDataPipeline` is what makes this safe to wire straight to UI events: it prepares on a worker
-thread, delivers on the EDT, and a generation counter drops superseded work — mash the pickers and only
-the latest chart lands. The canvas is a supported stateful API: `setData` swaps charts in place (the
-brush and viewport reset, as a new dataset demands), `setYScale` flips linear/log, `restyle` re-themes
-live, `setTitle`/`setNotes`/`setLegendPlacement` adjust the furniture, `renderTo` exports any size.
-This example runs as `HostExampleTest`, so it can't rot.
+Superseded builds are dropped automatically — mash the pickers and only the latest chart lands. The
+canvas's full stateful API (data swaps, log toggle, live re-theming, zoom controls, exports) is covered
+in the [interactive hosts guide](docs/interactive-hosts.md); the snippet runs as `HostExampleTest`.
+
+## Guides
+
+- **[Charting tables](docs/charting-tables.md)** — the data-analyst path: `Table.of`, columns by name,
+  refinements, specs, column classification, provenance.
+- **[Theming](docs/theming.md)** — the built-in family, designing your own theme (and keeping it
+  colourblind-safe), host style hooks.
+- **[Interactive hosts](docs/interactive-hosts.md)** — the long-lived canvas, the async pipeline,
+  interaction behaviours, exporting.
 
 ## The public surface at a glance
 
@@ -263,18 +264,19 @@ packages and nothing else:
 
 | Class | What it's for |
 |---|---|
-| `Charts` | The factories: one call per chart type, plus `auto`/`of` for tabular data. |
+| `Charts` | The factories: one call per chart type, over plain values or a `Table` with columns by name. |
 | `Chart` / `BarChart` / `LineChart` | Fluent configuration ending in `component()` or `image(w, h)`. |
+| `TableBarChart` / `TableLineChart` / `TableScatterChart` | Table charts refining fluently: `by(column)`, `stacked()`, `points()`. |
 | `ChartCanvas` | The live Swing widget; the stateful API interactive hosts hold on to. |
 | `ChartTheme` | Every colour as one immutable value; five validated built-ins. |
 | `ChartStyle` | Spacing/type tokens; plug in a host UI zoom and base font once. |
 | `ChartFormat` | The numeric label rules charts use — for hosts matching their captions. |
 | `ChartNotice` | A quiet coverage caption ("showing 20,000 of 480,000 rows") fed by `Provenance`. |
 | `ProportionStrip` | A compact labelled share bar for tables and cards. |
-| `ResultSnapshot` | The tabular seam: column names, optional types, string rows. |
+| `Table` | The tabular seam: `Table.of(columns, rows)`, columns resolvable by name. |
 | `ChartColumns` | Classifies columns into chart roles, sniffing values when types are missing. |
 | `ChartAuto` | Suggests the right chart form for a table's shape. |
-| `ChartBuilder` | Executes a spec over a snapshot into `ChartData` (the pipeline calls it for you). |
+| `ChartBuilder` | Executes a spec over a table into `ChartData` (the pipeline calls it for you). |
 | `ChartDataPipeline` | Async, EDT-safe, superseding chart preparation for interactive hosts. |
 | `ChartData` | The prepared, ready-to-draw form — one immutable record per chart type. |
 | `Provenance` | What the chart does and doesn't cover; drives the honesty notices. |

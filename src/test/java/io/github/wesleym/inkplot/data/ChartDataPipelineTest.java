@@ -17,12 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChartDataPipelineTest {
 
-	private static ResultSnapshot oneCategory(int rows) {
+	private static Table oneCategory(int rows) {
 		List<List<String>> data = new ArrayList<>();
 		for (int i = 0; i < rows; i++) {
 			data.add(List.of("A"));
 		}
-		return new ResultSnapshot(List.of("k"), List.of("varchar"), data, false);
+		return new Table(List.of("k"), List.of("varchar"), data, false);
 	}
 
 	@Test

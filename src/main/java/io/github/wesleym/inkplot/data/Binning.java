@@ -12,6 +12,12 @@ public final class Binning {
 	private Binning() { }
 
 	/** Bin edges (one more than counts) and the count in each bin. */
+	/**
+	 * The computed bins.
+	 *
+	 * @param edges  bin boundaries; bin {@code i} is {@code [edges[i], edges[i+1])}
+	 * @param counts values per bin, one fewer entry than {@code edges}
+	 */
 	public record Result(double[] edges, long[] counts) { }
 
 	public static Result bins(double[] values, int requestedBins) {

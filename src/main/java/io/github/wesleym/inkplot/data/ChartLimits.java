@@ -5,7 +5,7 @@ package io.github.wesleym.inkplot.data;
  * auditable. The source string rows stay the single copy of the data; a chart only ever holds the compact primitive
  * arrays these limits bound, and whenever a cap engages the view says so (never a silently partial picture).
  */
-public final class ChartLimits {
+final class ChartLimits {
 
 	private ChartLimits() { }
 

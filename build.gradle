@@ -18,6 +18,12 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
+// Fluent setters and self-describing record accessors keep prose docs without pedantic
+// tag-per-parameter noise; real doclint checks (syntax, references) stay on.
+javadoc {
+    options.addStringOption('Xdoclint:all,-missing', '-quiet')
+}
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'

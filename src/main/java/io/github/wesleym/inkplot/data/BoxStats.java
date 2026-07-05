@@ -9,7 +9,7 @@ import java.util.Arrays;
  * inside 1.5×IQR of the box, and the values beyond that as outliers (capped so a pathological column can't produce a
  * million dots). Sorts one bounded copy of the sample and nothing else.
  */
-public final class BoxStats {
+final class BoxStats {
 
 	private BoxStats() { }
 

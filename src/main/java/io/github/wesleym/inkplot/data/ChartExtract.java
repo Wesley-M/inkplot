@@ -11,7 +11,7 @@ import java.util.List;
  * heap. Cells that don't parse are dropped and counted; rows beyond the cap are counted too, so the view can report
  * exactly what was left out.
  */
-public final class ChartExtract {
+final class ChartExtract {
 
 	private ChartExtract() { }
 

@@ -26,7 +26,14 @@ import java.util.List;
  */
 public final class ProportionStrip extends JComponent {
 
-	/** One share of the whole: its hover label, its 0..1 share, its row count ({@code -1} unknown), its fill. */
+	/**
+	 * One share of the whole.
+	 *
+	 * @param label the hover-tooltip name for this share
+	 * @param share this segment's 0..1 fraction of the strip
+	 * @param count the row count behind the share, or {@code -1} when unknown
+	 * @param color the fill (see {@link ChartTheme#distribution()} for the single-distribution hue)
+	 */
 	public record Segment(String label, double share, long count, Color color) { }
 
 	private static final int REMAINDER = -1;

@@ -227,19 +227,64 @@ ChartStyle.fontWith(() -> appBaseFont);
 Bar (grouped / stacked / horizontal), line (numeric or time axis), scatter, histogram, density,
 box-and-whisker, doughnut, waffle, and treemap — plus a proportion strip for compact share bars.
 
-## API surface
+## Building an interactive host
 
-What you may depend on is stated as a Java module, not a convention:
+The factories cover embed-a-chart. When you're building a chart *view* — pickers, live re-queries, a
+chart that stays on screen and reconfigures — hold the widget and feed it through the async pipeline
+(this is exactly how the database console inkplot was extracted from drives its explorer):
 
-- **`io.github.wesleym.inkplot`** — the `Charts` factories, the `ChartCanvas` widget (a supported
-  stateful API: swap data, toggle scales, restyle, zoom, export), themes, style hooks.
-- **`io.github.wesleym.inkplot.data`** — the tabular layer: `ResultSnapshot` in, `ChartData` out, with
-  `ChartColumns`, `ChartAuto`, and the async `ChartDataPipeline` for interactive hosts.
-- **`io.github.wesleym.inkplot.spec`** — `ChartSpec` and its enums.
+```java
+// One canvas for the lifetime of the view; prepared data swaps in place.
+ChartCanvas canvas = new ChartCanvas(ChartTheme.PAPER);
+ChartDataPipeline pipeline = new ChartDataPipeline();
 
-The `render` and `scale` packages are implementation — **not exported**, free to change between
-versions. If the public surface can't do something you need, that's an API gap to raise, not a reason
-to reach inside.
+// Classify the columns once, suggest a form, and derive a starting spec from them.
+ChartColumns columns = new ChartColumns(table);
+ChartSpec spec = ChartSpecs.initial(ChartAuto.suggest(columns), columns);
+
+// Rebuild off the EDT whenever a picker changes; superseded builds are dropped, errors land
+// as a message instead of a broken chart.
+pipeline.prepare(spec, table, canvas.getWidth(),
+        canvas::setData,
+        statusBar::setText);
+```
+
+`ChartDataPipeline` is what makes this safe to wire straight to UI events: it prepares on a worker
+thread, delivers on the EDT, and a generation counter drops superseded work — mash the pickers and only
+the latest chart lands. The canvas is a supported stateful API: `setData` swaps charts in place (the
+brush and viewport reset, as a new dataset demands), `setYScale` flips linear/log, `restyle` re-themes
+live, `setTitle`/`setNotes`/`setLegendPlacement` adjust the furniture, `renderTo` exports any size.
+This example runs as `HostExampleTest`, so it can't rot.
+
+## The public surface at a glance
+
+What you may depend on is stated as a Java module, not a convention — `module-info` exports these three
+packages and nothing else:
+
+| Class | What it's for |
+|---|---|
+| `Charts` | The factories: one call per chart type, plus `auto`/`of` for tabular data. |
+| `Chart` / `BarChart` / `LineChart` | Fluent configuration ending in `component()` or `image(w, h)`. |
+| `ChartCanvas` | The live Swing widget; the stateful API interactive hosts hold on to. |
+| `ChartTheme` | Every colour as one immutable value; five validated built-ins. |
+| `ChartStyle` | Spacing/type tokens; plug in a host UI zoom and base font once. |
+| `ChartFormat` | The numeric label rules charts use — for hosts matching their captions. |
+| `ChartNotice` | A quiet coverage caption ("showing 20,000 of 480,000 rows") fed by `Provenance`. |
+| `ProportionStrip` | A compact labelled share bar for tables and cards. |
+| `ResultSnapshot` | The tabular seam: column names, optional types, string rows. |
+| `ChartColumns` | Classifies columns into chart roles, sniffing values when types are missing. |
+| `ChartAuto` | Suggests the right chart form for a table's shape. |
+| `ChartBuilder` | Executes a spec over a snapshot into `ChartData` (the pipeline calls it for you). |
+| `ChartDataPipeline` | Async, EDT-safe, superseding chart preparation for interactive hosts. |
+| `ChartData` | The prepared, ready-to-draw form — one immutable record per chart type. |
+| `Provenance` | What the chart does and doesn't cover; drives the honesty notices. |
+| `ChartSpec` + `ChartType`, `Aggregate`, `CategoryOrder` | The declarative "which columns, which roles, which reduction". |
+| `ChartSpecs` | Sensible default specs — the engine behind `Charts.auto`. |
+
+Each of these carries full Javadoc, and the three exported packages have `package-info` overviews that
+orient a first read. The `render` and `scale` packages are implementation — **not exported**, free to
+change between versions. If the public surface can't do something you need, that's an API gap to raise,
+not a reason to reach inside.
 
 ## Requirements
 

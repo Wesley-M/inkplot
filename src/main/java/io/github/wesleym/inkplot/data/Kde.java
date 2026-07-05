@@ -5,7 +5,7 @@ package io.github.wesleym.inkplot.data;
  * follows Silverman's rule (scaled by a user factor), and the sample is stride-capped so the cost stays
  * O(grid × cap) whatever the result size. Allocates only the output grid arrays plus one bounded sorted copy.
  */
-public final class Kde {
+final class Kde {
 
 	private Kde() { }
 

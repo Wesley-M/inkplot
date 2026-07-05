@@ -1,7 +1,7 @@
 package io.github.wesleym.inkplot.data;
 
 /** Lenient numeric parsing for string cells — the one rule for "does this value chart as a number". */
-public final class Numbers {
+final class Numbers {
 
 	private Numbers() { }
 

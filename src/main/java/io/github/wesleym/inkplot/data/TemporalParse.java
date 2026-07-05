@@ -16,7 +16,7 @@ import java.util.Locale;
  * {@code 16:29:06.9730000000000000000000000000000}) by keeping at most nanosecond precision and discarding the rest.
  * Anything it doesn't recognise returns null, so a temporal axis degrades to categorical rather than inventing a time.
  */
-public final class TemporalParse {
+final class TemporalParse {
 
 	private TemporalParse() { }
 

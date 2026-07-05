@@ -39,7 +39,7 @@ import java.util.Optional;
  * The embeddable chart surface: given a prepared {@link ChartData} it lays out one plot — margins measured from the
  * real label widths, one X and one Y axis, recessive gridlines behind the marks, a legend for multi-series data — and
  * paints it. It is deliberately decoupled from the query-tab shell (it depends only on the theme and the chart data),
- * so it drops into the insights panel or a full-screen frame unchanged.
+ * so it drops into a dashboard tile or a full-screen frame unchanged.
  *
  * <p>The static chart is rendered once into a cached image and redrawn from it on a bare repaint; only a size, data,
  * theme, or scale change rebuilds it, and the hover overlay paints on top without touching the cache. The same
@@ -371,7 +371,7 @@ public final class ChartCanvas extends JComponent {
 
 	@Override
 	public Dimension getPreferredSize() {
-		// Honour an explicit setPreferredSize (e.g. a small embedded histogram in the insights card); otherwise a
+		// Honour an explicit setPreferredSize (e.g. a small chart embedded in a host panel); otherwise a
 		// comfortable default for a standalone chart.
 		return isPreferredSizeSet() ? super.getPreferredSize() : new Dimension(ChartStyle.px(480), ChartStyle.px(300));
 	}

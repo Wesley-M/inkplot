@@ -7,8 +7,8 @@ import java.time.Instant;
 import java.util.Random;
 
 /**
- * Canned, realistic chart data for the preview harness and renderer tests — one builder per chart type, so previews
- * and unit tests draw the same shapes. Kept in the test tree; not shipped.
+ * Canned, realistic demo data for the preview harness and renderer tests — one builder per chart type, so
+ * previews and unit tests draw the same shapes. Kept in the test tree; not shipped.
  */
 final class ChartFixtures {
 
@@ -18,19 +18,19 @@ final class ChartFixtures {
 
 	static ChartData.Bar barSingle() {
 		return new ChartData.Bar(
-				new String[] { "Completed", "Pending", "Cancelled", "Refunded", "On hold" },
+				new String[] { "Delivered", "Processing", "Cancelled", "Refunded", "On hold" },
 				new String[] { "Orders" },
 				new double[][] { { 12410, 6200, 1930, 410, 880 } },
 				false, Provenance.full(21830));
 	}
 
-	/** Long clinical labels down the Y gutter — the case horizontal orientation exists for. */
+	/** Long category labels down the Y gutter — the case horizontal orientation exists for. */
 	static ChartData.Bar barHorizontal() {
 		return new ChartData.Bar(
-				new String[] { "Comprehensive oral evaluation", "Periodic oral evaluation",
-						"Resin-based composite, two surfaces", "Prophylaxis, adult",
-						"Panoramic radiographic image", "Other" },
-				new String[] { "Rows" },
+				new String[] { "Billing and account questions", "Shipping and delivery delays",
+						"Product setup and installation", "Returns and refund requests",
+						"Technical troubleshooting", "Other" },
+				new String[] { "Tickets" },
 				new double[][] { { 9400, 7200, 3100, 2400, 1900, 800 } },
 				false, false, true, Provenance.full(24800));
 	}
@@ -56,11 +56,11 @@ final class ChartFixtures {
 				true, Provenance.full(22350));
 	}
 
-	/** The top-values breakdown the insights card embeds — long value labels, horizontal like the card draws it. */
+	/** A top-values breakdown at embedded strip height — long value labels, horizontal. */
 	static ChartData.Bar barTopValues() {
 		return new ChartData.Bar(
-				new String[] { "completed", "scheduled", "cancelled by patient", "no-show (unconfirmed)",
-						"rescheduled", "pending insurance verification", "checked in", "in progress" },
+				new String[] { "delivered", "shipped", "cancelled by customer", "awaiting payment",
+						"returned to sender", "pending fraud review", "picked up in store", "in transit" },
 				new String[] { "Rows" },
 				new double[][] { { 9400, 7200, 3100, 2400, 1900, 1200, 800, 350 } },
 				false, false, true, Provenance.full(26350));
@@ -72,34 +72,34 @@ final class ChartFixtures {
 	 */
 	static ChartData.Doughnut doughnutTail() {
 		return new ChartData.Doughnut(
-				new String[] { "TRACKER_V11_API", "DENTRIX_V70", "CLEARDENT_V9", "ABELDENT_V14",
-						"POWERPRACTICE_V4", "OPENDENTAL_V242", "ABELDENT_V15", "DENTITEK_V8",
-						"DENTITEK_V7", "GID_V25" },
+				new String[] { "CHROME_131", "SAFARI_18", "FIREFOX_133", "EDGE_131",
+						"CHROME_130", "SAFARI_17", "OPERA_115", "BRAVE_1_73",
+						"VIVALDI_7", "ARC_1_77" },
 				new double[] { 318, 100, 71, 53, 18, 15, 6, 4, 2, 2 },
-				"count", Provenance.full(589));
+				"sessions", Provenance.full(589));
 	}
 
 	/** A waffle over more categories than a doughnut admits — the fine grid keeps thirteen groups legible. */
 	static ChartData.Waffle waffle() {
 		return new ChartData.Waffle(
-				new String[] { "TRACKER_V11_API", "DENTRIX_V70", "CLEARDENT_V9", "ABELDENT_V14",
-						"POWERPRACTICE_V4", "OPENDENTAL_V242", "ABELDENT_V15", "DENTITEK_V8",
-						"DENTITEK_V7", "GID_V25", "EXCEED_V12", "PARADIGM_V3", "Other" },
+				new String[] { "CHROME_131", "SAFARI_18", "FIREFOX_133", "EDGE_131",
+						"CHROME_130", "SAFARI_17", "OPERA_115", "BRAVE_1_73",
+						"VIVALDI_7", "ARC_1_77", "FIREFOX_132", "CHROME_129", "Other" },
 				new double[] { 318, 100, 71, 53, 18, 15, 6, 4, 2, 2, 2, 1, 1 },
-				"count", Provenance.full(593));
+				"sessions", Provenance.full(593));
 	}
 
 	/** The same skewed shares as a treemap — the biggest tile dominates, the tail still gets visible tiles. */
 	static ChartData.Treemap treemap() {
 		return new ChartData.Treemap(
-				new String[] { "TRACKER_V11_API", "DENTRIX_V70", "CLEARDENT_V9", "ABELDENT_V14",
-						"POWERPRACTICE_V4", "OPENDENTAL_V242", "ABELDENT_V15", "DENTITEK_V8",
-						"DENTITEK_V7", "GID_V25", "EXCEED_V12", "PARADIGM_V3", "Other" },
+				new String[] { "CHROME_131", "SAFARI_18", "FIREFOX_133", "EDGE_131",
+						"CHROME_130", "SAFARI_17", "OPERA_115", "BRAVE_1_73",
+						"VIVALDI_7", "ARC_1_77", "FIREFOX_132", "CHROME_129", "Other" },
 				new double[] { 318, 100, 71, 53, 18, 15, 6, 4, 2, 2, 2, 1, 1 },
-				"count", Provenance.full(593));
+				"sessions", Provenance.full(593));
 	}
 
-	/** The boolean-column split the insights card embeds at strip height. */
+	/** A boolean-column split at embedded strip height. */
 	static ChartData.Doughnut doughnutBoolean() {
 		return new ChartData.Doughnut(
 				new String[] { "true", "false" },
@@ -109,7 +109,7 @@ final class ChartFixtures {
 
 	static ChartData.Doughnut doughnut() {
 		return new ChartData.Doughnut(
-				new String[] { "Insurance", "Card", "Cash", "Financing", "Cheque", "Other" },
+				new String[] { "Card", "PayPal", "Bank transfer", "Gift card", "Cash on delivery", "Other" },
 				new double[] { 18200, 12400, 6100, 2900, 1400, 800 },
 				"Payments", Provenance.full(41800));
 	}

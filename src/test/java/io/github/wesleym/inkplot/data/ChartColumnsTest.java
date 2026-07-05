@@ -34,7 +34,7 @@ class ChartColumnsTest {
 		for (int i = 0; i < 50; i++) {
 			rows.add(List.of(String.valueOf(i * 3), "2026-02-" + String.format("%02d", 1 + i % 27), "label" + i));
 		}
-		// No JDBC types (the bridge often returns none) — roles must come from value sniffing.
+		// No declared types (untyped sources return none) — roles must come from value sniffing.
 		ResultSnapshot s = snapshot(List.of("n", "d", "t"), List.of("", "", ""), rows);
 		ChartColumns c = new ChartColumns(s);
 		assertTrue(c.isNumeric(0), "all-numeric column sniffs numeric");

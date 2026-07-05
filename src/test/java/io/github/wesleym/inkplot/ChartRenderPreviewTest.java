@@ -68,10 +68,10 @@ class ChartRenderPreviewTest {
 		assertTrue(out.exists() && out.length() > 0, "titled preview written: " + out);
 	}
 
-	// The insights card embeds charts at strip heights (160px doughnut, 220px top-value bars); they must stay
+	// Host panels embed charts at strip heights (160px doughnut, 220px top-value bars); they must stay
 	// legible (or degrade their labels gracefully) there, not just at the standalone canvas size.
 	@Test
-	void rendersEmbeddedChartsAtInsightsStripSizes() throws Exception {
+	void rendersEmbeddedChartsAtStripSizes() throws Exception {
 		for (NamedTheme def : THEMES) {
 			render(def, "doughnut-strip", ChartFixtures.doughnutBoolean(), W, 160);
 			render(def, "bar-topvalues-strip", ChartFixtures.barTopValues(), W, 220);

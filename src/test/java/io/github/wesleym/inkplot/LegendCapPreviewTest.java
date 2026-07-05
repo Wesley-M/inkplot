@@ -33,7 +33,7 @@ class LegendCapPreviewTest {
 		for (int i = 1; i <= 24; i++) {
 			rows.add(List.of("5.4." + i, String.valueOf(i * i)));
 		}
-		ResultSnapshot s = new ResultSnapshot(List.of("connectorVersion", "count"),
+		ResultSnapshot s = new ResultSnapshot(List.of("clientVersion", "count"),
 				List.of("varchar", "int"), rows, false);
 		ChartData.Doughnut d = (ChartData.Doughnut) ChartBuilder.build(new ChartSpec.Doughnut(0, 1), s, 640);
 		assertEquals("5.4.24", d.categories()[0], "the biggest share leads, whatever the row order");

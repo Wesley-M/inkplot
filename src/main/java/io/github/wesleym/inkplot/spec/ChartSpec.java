@@ -2,8 +2,8 @@ package io.github.wesleym.inkplot.spec;
 
 /**
  * A fully-configured chart: the type plus the result columns (by model index) and options it draws from. Produced by
- * the picker row and consumed by the data pipeline; immutable, so re-preparing after a query re-run is just handing the
- * same spec a new snapshot.
+ * a picker UI or {@link ChartSpecs#initial}, consumed by the data pipeline; immutable, so re-preparing after a
+ * data refresh is just handing the same spec a new snapshot.
  */
 public sealed interface ChartSpec
 		permits ChartSpec.Bar, ChartSpec.Doughnut, ChartSpec.Waffle, ChartSpec.Treemap, ChartSpec.Line,

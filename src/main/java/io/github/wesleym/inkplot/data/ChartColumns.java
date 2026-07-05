@@ -6,8 +6,8 @@ import java.util.List;
 
 /**
  * Classifies each result column into the roles a chart picker cares about — numeric, temporal, category-like — from
- * the JDBC type when it's declared, and from a small value sample when it isn't (the bridge often returns untyped
- * columns). Cheap enough to run on the EDT when the picker opens: typed columns cost nothing and untyped ones sniff
+ * the declared type when there is one, and from a small value sample when there isn't (many sources return
+ * untyped columns). Cheap enough to run on the EDT when the picker opens: typed columns cost nothing and untyped ones sniff
  * only a bounded sample.
  */
 public final class ChartColumns {

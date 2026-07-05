@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 /**
  * Prepares chart data off the EDT and delivers it back on the EDT, superseding stale work with a generation counter so
- * rapid picker changes and query re-runs never stack concurrent extractions or land an out-of-date chart. A single
+ * rapid picker changes and data refreshes never stack concurrent extractions or land an out-of-date chart. A single
  * worker thread does the parsing/binning/downsampling; the EDT only ever receives the finished, current result.
  */
 public final class ChartDataPipeline {

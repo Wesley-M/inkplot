@@ -38,7 +38,7 @@ class ChartHoverPreviewTest {
 		renderHover("scatter", ChartFixtures.scatter(),
 				ctx -> new Point(ctx.plot().x + ctx.plot().width / 2, ctx.plot().y + ctx.plot().height / 2));
 
-		// Mid-ring bottom-left (the DENTRIX slice) — its lift, its colour-lit leader, and the count tooltip,
+		// Mid-ring bottom-left (the second-largest slice) — its lift, its colour-lit leader, and the count tooltip,
 		// with the callout label far enough from the pointer that the tooltip doesn't cover it.
 		renderHover("doughnut", ChartFixtures.doughnutTail(),
 				ctx -> new Point(ctx.plot().x + (int) (ctx.plot().width * 0.325),

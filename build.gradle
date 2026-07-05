@@ -34,3 +34,38 @@ test {
     useJUnitPlatform()
     systemProperty 'java.awt.headless', 'true'
 }
+
+// ---- runnable samples ------------------------------------------------------------------------------
+// Small, heavily-commented programs to play with — one window each. `gradlew runTableTour` etc.;
+// compiled as part of `check` so the published samples can never rot.
+sourceSets {
+    samples {
+        java { srcDir 'samples/java' }
+        resources { srcDir 'samples/resources' }
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+def sampleMains = [
+    HelloBars    : 'the ten-line starter: one chart in one window',
+    TableTour    : 'a real CSV through the named-column factories, one tab per question',
+    ThemeGallery : 'live re-theming across the built-in family and a custom theme',
+    ExplorerLite : 'the interactive-host pattern: pickers + async pipeline + one long-lived canvas',
+    LiveDashboard: 'six live charts composed into one dashboard window',
+]
+sampleMains.each { name, blurb ->
+    tasks.register("run${name}", JavaExec) {
+        group = 'samples'
+        description = blurb
+        classpath = sourceSets.samples.runtimeClasspath
+        mainClass = "io.github.wesleym.inkplot.samples.${name}"
+    }
+}
+tasks.register('samples') {
+    group = 'samples'
+    description = 'Lists the runnable samples.'
+    def lines = sampleMains.collect { name, blurb -> "  gradlew run${name}".padRight(28) + "  ${blurb}" }
+    doLast { lines.each { println it } }
+}
+tasks.named('check') { dependsOn tasks.named('compileSamplesJava') }

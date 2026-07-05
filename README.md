@@ -35,6 +35,26 @@ panel.add(Charts.bar("Mon", "Tue", "Wed", "Thu", "Fri")
 brush X-zoom on continuous axes, double-click to reset — all on by default. Swap `component()` for
 `image(width, height)` to render headless (reports, tests, CI), like every image on this page.
 
+## Run the samples
+
+Five small windows to play with — each is a short, heavily-commented program under `samples/`:
+
+```
+./gradlew samples            # list them
+./gradlew runTableTour       # start here
+```
+
+| Sample | What it teaches |
+|---|---|
+| `runHelloBars` | The ten-line starter: one chart in one window. |
+| `runTableTour` | A real CSV through the named-column factories — one tab per question. |
+| `runThemeGallery` | Live re-theming across the built-in family and a custom theme. |
+| `runExplorerLite` | The interactive-host pattern: pickers + async pipeline + one long-lived canvas. |
+| `runLiveDashboard` | Six live charts composed into one dashboard window. |
+
+Every window has the full interaction layer — hover, wheel zoom, drag-pan, brush, double-click reset —
+and the samples compile as part of `check`, so they can't rot.
+
 ## A value over time
 
 X values are epoch milliseconds; `timeAxis()` gives the axis calendar ticks.

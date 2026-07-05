@@ -76,4 +76,6 @@ a quiet figure note on the chart itself — a partial picture is never presented
 
 ---
 
+*Play with it: `gradlew runTableTour` runs this whole guide against a bundled CSV.*
+
 *Next: [Theming](theming.md) · [Interactive hosts](interactive-hosts.md) · [README](../README.md)*

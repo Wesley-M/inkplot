@@ -71,4 +71,6 @@ any scale.
 
 ---
 
+*Play with it: `gradlew runExplorerLite` is this guide as a working mini-explorer.*
+
 *Next: [Charting tables](charting-tables.md) · [Theming](theming.md) · [README](../README.md)*

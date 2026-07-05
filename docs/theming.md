@@ -61,4 +61,6 @@ ChartStyle.fontWith(() -> appBaseFont);
 
 ---
 
+*Play with it: `gradlew runThemeGallery` switches every theme live on one chart.*
+
 *Next: [Charting tables](charting-tables.md) · [Interactive hosts](interactive-hosts.md) · [README](../README.md)*

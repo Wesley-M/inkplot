@@ -12,9 +12,9 @@ interactive charts by default, and a colourblind-aware palette validated for lig
 
 <img src="docs/showcase-dashboard.png" alt="Six charts composed into a dashboard, custom Paper theme">
 
-<sup>Six charts, one custom "Paper" theme — composed headless by inkplot itself (`ShowcaseTest`), like
-every image on this page: the code shown is exactly what rendered the chart next to it, regenerated on
-every build so they can't drift apart.</sup>
+<sup>Six charts, one theme — the built-in `ChartTheme.PAPER` — composed headless by inkplot itself
+(`ShowcaseTest`), like every image on this page: the code shown is exactly what rendered the chart next
+to it, regenerated on every build so they can't drift apart.</sup>
 
 ## Quickstart
 
@@ -169,29 +169,35 @@ the transient screen viewport.
 
 ## Theming
 
-`ChartTheme.LIGHT` and `ChartTheme.DARK` are validated defaults: the eight-hue categorical palette is
-ordered for colourblind separation, and the dark palette is the same hues re-stepped for the dark
-surface — not an automatic flip. Every colour a chart draws with lives in one immutable value, so a
-whole visual identity is one expression — this is the warm, print-like "Paper" theme the dashboard
-above renders in:
+Three themes are built in. `ChartTheme.LIGHT` and `ChartTheme.DARK` are validated defaults: the
+eight-hue categorical palette is ordered for colourblind separation, and the dark palette is the same
+hues re-stepped for the dark surface — not an automatic flip. `ChartTheme.PAPER` is the warm,
+print-like alternative the dashboard above renders in — one call away:
 
 ```java
-ChartTheme paper = new ChartTheme(false,
-        new Color(0xFA, 0xF6, 0xEF),    // surface
-        new Color(0x2B, 0x26, 0x20),    // text
-        new Color(0x8C, 0x84, 0x78),    // muted
-        new Color(0xE6, 0xDF, 0xD2),    // hairline
-        new Color(0xC4, 0x55, 0x1E),    // accent
-        new Color(0xF1, 0xEA, 0xE0),    // elevated (tooltips)
-        List.of(new Color(0xC4, 0x55, 0x1E), new Color(0x2E, 0x6E, 0x62),
-                new Color(0xC0, 0x8B, 0x00), new Color(0x5B, 0x4A, 0x8A),
-                new Color(0x8A, 0x3B, 0x3B), new Color(0x4E, 0x7A, 0x3A),
-                new Color(0x3E, 0x6B, 0x9E), new Color(0xA5, 0x6A, 0x8E)));
-
-Charts.bar(cats, values).theme(paper).component();
+Charts.bar(cats, values).theme(ChartTheme.PAPER).component();
 ```
 
-The same chart, four palettes — the two built-ins, "Paper", and a deep blue-black "Midnight":
+Every colour a chart draws with lives in one immutable value, so a whole visual identity of your own is
+a single expression — a deep blue-black "Midnight", say:
+
+```java
+ChartTheme midnight = new ChartTheme(true,
+        new Color(0x10, 0x16, 0x22),    // surface
+        new Color(0xF2, 0xF5, 0xFA),    // text
+        new Color(0x8A, 0x93, 0xA6),    // muted
+        new Color(0x1D, 0x26, 0x35),    // hairline
+        new Color(0x5B, 0x8D, 0xEF),    // accent
+        new Color(0x1A, 0x23, 0x33),    // elevated (tooltips)
+        List.of(new Color(0x5B, 0x8D, 0xEF), new Color(0x3E, 0xCF, 0x8E),
+                new Color(0xF5, 0xA6, 0x23), new Color(0xE8, 0x61, 0x8C),
+                new Color(0x9B, 0x7E, 0xF7), new Color(0x38, 0xC6, 0xD9),
+                new Color(0xE9, 0x78, 0x52), new Color(0xC3, 0xD3, 0x4F)));
+
+Charts.bar(cats, values).theme(midnight).component();
+```
+
+The same chart, four palettes — the three built-ins plus that custom "Midnight":
 
 <img src="docs/showcase-palettes.png" alt="The same grouped bar chart in four palettes">
 

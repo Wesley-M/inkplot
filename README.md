@@ -227,6 +227,20 @@ ChartStyle.fontWith(() -> appBaseFont);
 Bar (grouped / stacked / horizontal), line (numeric or time axis), scatter, histogram, density,
 box-and-whisker, doughnut, waffle, and treemap — plus a proportion strip for compact share bars.
 
+## API surface
+
+What you may depend on is stated as a Java module, not a convention:
+
+- **`io.github.wesleym.inkplot`** — the `Charts` factories, the `ChartCanvas` widget (a supported
+  stateful API: swap data, toggle scales, restyle, zoom, export), themes, style hooks.
+- **`io.github.wesleym.inkplot.data`** — the tabular layer: `ResultSnapshot` in, `ChartData` out, with
+  `ChartColumns`, `ChartAuto`, and the async `ChartDataPipeline` for interactive hosts.
+- **`io.github.wesleym.inkplot.spec`** — `ChartSpec` and its enums.
+
+The `render` and `scale` packages are implementation — **not exported**, free to change between
+versions. If the public surface can't do something you need, that's an API gap to raise, not a reason
+to reach inside.
+
 ## Requirements
 
 Java 21+. No dependencies.

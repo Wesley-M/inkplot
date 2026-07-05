@@ -322,13 +322,23 @@ public final class ChartCanvas extends JComponent {
 		invalidateBase();
 	}
 
+	/** Whether the canvas currently holds prepared data (false while empty or still being prepared). */
+	public boolean hasData() {
+		return renderer != null;
+	}
+
+	/** Whether the current chart carries a legend — for hosts that show legend controls conditionally. */
+	public boolean hasLegend() {
+		return renderer != null && !renderer.legend(theme).isEmpty();
+	}
+
 	/** The renderer currently driving the canvas, or null when empty — the hover layer reads it. */
-	public MarkRenderer renderer() {
+	MarkRenderer renderer() {
 		return renderer;
 	}
 
 	/** The last laid-out plot context (scales + plot rect), for the hover layer's hit-testing. */
-	public PlotContext plotContext() {
+	PlotContext plotContext() {
 		return lastContext;
 	}
 
@@ -349,12 +359,12 @@ public final class ChartCanvas extends JComponent {
 	}
 
 	/** Adopts the pointer state for the hover overlay; a bare repaint (no cache rebuild) reflects it. */
-	public void setHover(ChartHoverState state) {
+	void setHover(ChartHoverState state) {
 		this.hover = state == null ? ChartHoverState.NONE : state;
 		repaint();
 	}
 
-	public ChartHoverState hover() {
+	ChartHoverState hover() {
 		return hover;
 	}
 

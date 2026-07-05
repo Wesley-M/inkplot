@@ -154,6 +154,15 @@ public record ChartTheme(boolean dark, Color surface, Color text, Color muted, C
 		return legibleOn(varied, surface, 2.5);
 	}
 
+	/**
+	 * The single-hue fill a chart uses when it encodes one distribution rather than identities — histogram
+	 * bars, share strips. Hosts drawing their own compact strips should use this rather than assuming a
+	 * palette slot.
+	 */
+	public Color distribution() {
+		return series.get(0);
+	}
+
 	/** Black or white, whichever reads on {@code background} — for text drawn on a filled mark. */
 	public static Color readableOn(Color background) {
 		double luminance = (0.299 * background.getRed() + 0.587 * background.getGreen()

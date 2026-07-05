@@ -66,19 +66,34 @@ public final class Charts {
 
 	/** A doughnut of named shares — labelled callouts, or a legend when seated {@link Chart#legendBelow() below}. */
 	public static Chart doughnut(String[] categories, double[] values) {
-		return new Chart(new ChartData.Doughnut(categories.clone(), values.clone(), "Value",
+		return doughnut(categories, values, "Value");
+	}
+
+	/** A doughnut whose centre total and tooltips carry {@code valueLabel} ("Sessions", "GB", …). */
+	public static Chart doughnut(String[] categories, double[] values, String valueLabel) {
+		return new Chart(new ChartData.Doughnut(categories.clone(), values.clone(), valueLabel,
 				Provenance.full(categories.length), null));
 	}
 
 	/** A squarified treemap of named magnitudes. */
 	public static Chart treemap(String[] categories, double[] values) {
-		return new Chart(new ChartData.Treemap(categories.clone(), values.clone(), "Value",
+		return treemap(categories, values, "Value");
+	}
+
+	/** A treemap whose tooltips carry {@code valueLabel} ("Sessions", "GB", …). */
+	public static Chart treemap(String[] categories, double[] values, String valueLabel) {
+		return new Chart(new ChartData.Treemap(categories.clone(), values.clone(), valueLabel,
 				Provenance.full(categories.length)));
 	}
 
 	/** A waffle of named shares — one square per percentage point. */
 	public static Chart waffle(String[] categories, double[] values) {
-		return new Chart(new ChartData.Waffle(categories.clone(), values.clone(), "Value",
+		return waffle(categories, values, "Value");
+	}
+
+	/** A waffle whose tooltips carry {@code valueLabel} ("Sessions", "GB", …). */
+	public static Chart waffle(String[] categories, double[] values, String valueLabel) {
+		return new Chart(new ChartData.Waffle(categories.clone(), values.clone(), valueLabel,
 				Provenance.full(categories.length)));
 	}
 

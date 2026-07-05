@@ -49,7 +49,7 @@ class ReadmeExamplesTest {
 	void doughnutShares() throws Exception {
 		Chart chart = Charts.doughnut(
 				new String[] { "Organic search", "Direct", "Social", "Referral", "Email" },
-				new double[] { 18200, 12400, 6100, 2900, 1400 })
+				new double[] { 18200, 12400, 6100, 2900, 1400 }, "Sessions")
 				.title("Sessions by source");
 		write("readme-doughnut", chart, 640, 400);
 	}

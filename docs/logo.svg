@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="112" viewBox="0 0 420 112" role="img" aria-label="inkplot">
+  <defs>
+    <linearGradient id="ink" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#2A78D6"/>
+      <stop offset="1" stop-color="#38C6D9"/>
+    </linearGradient>
+  </defs>
+  <!-- the mark: an ink-dark tile, one rising spline, and the drop it ends in -->
+  <rect x="8" y="8" width="96" height="96" rx="24" fill="#10141C"/>
+  <path d="M 26 79 C 41 79, 43 51, 56 51 C 68 51, 67 66, 75 58 C 81 52, 82 40, 86 33"
+        fill="none" stroke="url(#ink)" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="86" cy="33" r="7.5" fill="#38C6D9"/>
+  <text x="126" y="72" font-family="'Segoe UI','Helvetica Neue',Arial,sans-serif" font-size="46"
+        font-weight="600" letter-spacing="-1.5" fill="#10141C">inkplot</text>
+</svg>

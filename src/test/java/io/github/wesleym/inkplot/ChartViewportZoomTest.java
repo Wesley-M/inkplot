@@ -23,7 +23,7 @@ class ChartViewportZoomTest {
 
 	@Test
 	void zoomMagnifiesTheWidgetButNeverTheExport() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartCanvas canvas = new ChartCanvas(theme);
 		canvas.setData(ChartFixtures.barSingle());
 		canvas.setSize(W, H);
@@ -52,7 +52,7 @@ class ChartViewportZoomTest {
 
 	@Test
 	void zoomOutFromFitStepsBackAndFitRestores() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartCanvas canvas = new ChartCanvas(theme);
 		canvas.setData(ChartFixtures.barSingle());
 		canvas.setSize(W, H);

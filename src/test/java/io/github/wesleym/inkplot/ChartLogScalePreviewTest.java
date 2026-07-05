@@ -24,7 +24,7 @@ class ChartLogScalePreviewTest {
 
 	@Test
 	void logToggleRescalesTheValueAxis() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartData.Bar data = new ChartData.Bar(
 				new String[] { "A", "B", "C", "D", "E" },
 				new String[] { "Value" },

@@ -7,7 +7,8 @@
 
 <p align="center">
 A small, pretty charting library for Swing. Pure JDK — zero dependencies — with a one-line API,<br>
-interactive charts by default, and a colourblind-aware palette validated for light and dark surfaces.
+interactive charts by default, and five vintage built-in themes, every palette machine-checked<br>
+for colourblind separation.
 </p>
 
 <img src="docs/showcase-dashboard.png" alt="Six charts composed into a dashboard, custom Paper theme">
@@ -169,14 +170,21 @@ the transient screen viewport.
 
 ## Theming
 
-Three themes are built in. `ChartTheme.LIGHT` and `ChartTheme.DARK` are validated defaults: the
-eight-hue categorical palette is ordered for colourblind separation, and the dark palette is the same
-hues re-stepped for the dark surface — not an automatic flip. `ChartTheme.PAPER` is the warm,
-print-like alternative the dashboard above renders in — one call away:
+Five vintage-leaning themes are built in, one call away:
+
+- **`ChartTheme.PAPER`** — the default: warm paper, earthy inks (the dashboard above).
+- **`ChartTheme.GAZETTE`** — newsprint: a cool sheet, masthead red, the restrained inks of a broadsheet.
+- **`ChartTheme.ATLAS`** — an old map: aged chart-paper tan and hand-coloured cartographer's inks.
+- **`ChartTheme.INKWELL`** — Paper's dark companion: the near-black of dried ink, lit by ember.
+- **`ChartTheme.NOCTURNE`** — a study after dark: deep viridian and brass-lamp light.
 
 ```java
-Charts.bar(cats, values).theme(ChartTheme.PAPER).component();
+Charts.bar(cats, values).theme(ChartTheme.NOCTURNE).component();
 ```
+
+None of it is eyeballed: every built-in palette is machine-checked — OKLCH lightness band and chroma
+floor, plus adjacent-slot colour-vision-deficiency separation under protan/deutan simulation — by
+`ChartThemePaletteTest` on every build.
 
 Every colour a chart draws with lives in one immutable value, so a whole visual identity of your own is
 a single expression — a deep blue-black "Midnight", say:
@@ -197,9 +205,9 @@ ChartTheme midnight = new ChartTheme(true,
 Charts.bar(cats, values).theme(midnight).component();
 ```
 
-The same chart, four palettes — the three built-ins plus that custom "Midnight":
+The same chart across the family — the five built-ins plus that custom "Midnight":
 
-<img src="docs/showcase-palettes.png" alt="The same grouped bar chart in four palettes">
+<img src="docs/showcase-palettes.png" alt="The same grouped bar chart in the five built-in themes and a custom one">
 
 Charts past the eighth series don't cycle the palette — extra slots generate distinct hues by
 golden-angle rotation across shade tiers, contrast-checked against the theme surface, so even a

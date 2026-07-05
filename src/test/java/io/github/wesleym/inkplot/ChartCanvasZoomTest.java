@@ -27,7 +27,7 @@ class ChartCanvasZoomTest {
 
 	@Test
 	void zoomOverridesTheTimeDomainExactlyAndResets() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartCanvas canvas = new ChartCanvas(theme);
 		canvas.setData(ChartFixtures.lineTime());
 		canvas.setSize(W, H);
@@ -50,7 +50,7 @@ class ChartCanvasZoomTest {
 
 	@Test
 	void bandAndAxisFreeChartsAreNotBrushable() {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartCanvas canvas = new ChartCanvas(theme);
 		canvas.setData(ChartFixtures.barSingle());
 		assertFalse(canvas.brushable(), "a category band has no continuous domain to brush");
@@ -60,7 +60,7 @@ class ChartCanvasZoomTest {
 
 	@Test
 	void newDataDropsAnInheritedZoom() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartCanvas canvas = new ChartCanvas(theme);
 		canvas.setData(ChartFixtures.lineTime());
 		canvas.setSize(W, H);

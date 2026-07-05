@@ -24,7 +24,7 @@ class ChartIntegrationPreviewTest {
 
 	@Test
 	void realRowsBuildAndRender() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ResultSnapshot orders = orders();
 
 		ChartData bar = ChartBuilder.build(new ChartSpec.Bar(1, 2, Aggregate.SUM, null, false), orders, 640);
@@ -45,7 +45,7 @@ class ChartIntegrationPreviewTest {
 
 	@Test
 	void overPreciseTimestampColumnPlotsAsTimeSeries() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		String[][] raw = {
 				{ "2024-12-14 16:29:06.97300000000000000000000000000000000", "156" },
 				{ "2024-12-14 17:03:11.02300000000000000000000000000000000", "39" },

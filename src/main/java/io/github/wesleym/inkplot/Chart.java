@@ -16,7 +16,7 @@ import java.util.List;
 public class Chart {
 
 	private ChartData data;
-	private ChartTheme theme = ChartTheme.LIGHT;
+	private ChartTheme theme = ChartTheme.PAPER;
 	private String title;
 	private String subtitle;
 	private boolean legendBelow;
@@ -49,7 +49,7 @@ public class Chart {
 		return this;
 	}
 
-	/** The colour theme; defaults to {@link ChartTheme#LIGHT}. */
+	/** The colour theme; defaults to {@link ChartTheme#PAPER}. */
 	public Chart theme(ChartTheme theme) {
 		this.theme = theme;
 		return this;

@@ -4,10 +4,10 @@ import java.awt.Color;
 import java.util.List;
 
 /**
- * Every colour a chart draws with, as one immutable value. Three themes are built in: {@link #LIGHT} and
- * {@link #DARK} are a validated, colourblind-aware default pair (the dark series palette is the same eight
- * hues re-stepped for the dark surface, not an automatic flip), and {@link #PAPER} is a warm print-like
- * alternative. Pass a custom instance to restyle everything at once.
+ * Every colour a chart draws with, as one immutable value. Five vintage-leaning themes are built in —
+ * {@link #PAPER} (the default), {@link #GAZETTE}, and {@link #ATLAS} on light surfaces, {@link #INKWELL}
+ * and {@link #NOCTURNE} on dark — each palette machine-checked for lightness band, chroma, and adjacent
+ * colour-vision separation. Pass a custom instance to restyle everything at once.
  *
  * @param dark     whether this palette sits on a dark surface (drives hover lifts and contrast nudges)
  * @param surface  the chart background
@@ -25,59 +25,95 @@ public record ChartTheme(boolean dark, Color surface, Color text, Color muted, C
 		series = List.copyOf(series);
 	}
 
-	/** The built-in light theme. */
-	public static final ChartTheme LIGHT = new ChartTheme(false,
-			new Color(0xFC, 0xFC, 0xFB),   // surface
-			new Color(0x0B, 0x0B, 0x0B),   // text
-			new Color(0x89, 0x87, 0x81),   // muted
-			new Color(0xE1, 0xE0, 0xD9),   // hairline
-			new Color(0x2A, 0x78, 0xD6),   // accent
-			new Color(0xF0, 0xEF, 0xEC),   // elevated
-			List.of(
-					new Color(0x2A, 0x78, 0xD6),    // blue
-					new Color(0x1B, 0xAF, 0x7A),    // aqua
-					new Color(0xED, 0xA1, 0x00),    // yellow
-					new Color(0x00, 0x83, 0x00),    // green
-					new Color(0x4A, 0x3A, 0xA7),    // violet
-					new Color(0xE3, 0x49, 0x48),    // red
-					new Color(0xE8, 0x7B, 0xA4),    // magenta
-					new Color(0xEB, 0x68, 0x34)));  // orange
-
-	/** The built-in warm, print-like theme: a paper surface with earthy series inks. */
+	/** The default theme: a warm paper surface with earthy series inks — quiet, print-like, vintage. */
 	public static final ChartTheme PAPER = new ChartTheme(false,
 			new Color(0xFA, 0xF6, 0xEF),   // surface
 			new Color(0x2B, 0x26, 0x20),   // text
 			new Color(0x8C, 0x84, 0x78),   // muted
 			new Color(0xE6, 0xDF, 0xD2),   // hairline
-			new Color(0xC4, 0x55, 0x1E),   // accent
+			new Color(0xB1, 0x51, 0x2D),   // accent
 			new Color(0xF1, 0xEA, 0xE0),   // elevated
 			List.of(
-					new Color(0xC4, 0x55, 0x1E),    // terracotta
-					new Color(0x2E, 0x6E, 0x62),    // deep teal
-					new Color(0xC0, 0x8B, 0x00),    // ochre
-					new Color(0x5B, 0x4A, 0x8A),    // plum
-					new Color(0x8A, 0x3B, 0x3B),    // brick
-					new Color(0x4E, 0x7A, 0x3A),    // olive
-					new Color(0x3E, 0x6B, 0x9E),    // slate blue
-					new Color(0xA5, 0x6A, 0x8E)));  // mauve
+					new Color(0xB1, 0x51, 0x2D),    // terracotta
+					new Color(0x00, 0x7C, 0x5D),    // deep teal
+					new Color(0xB6, 0x8B, 0x16),    // ochre
+					new Color(0x61, 0x49, 0x89),    // plum
+					new Color(0xA6, 0x4D, 0x40),    // brick
+					new Color(0x8A, 0x94, 0x3F),    // olive
+					new Color(0x25, 0x5E, 0x93),    // slate blue
+					new Color(0xAA, 0x66, 0x94)));  // mauve
 
-	/** The built-in dark theme: the same eight hues as {@link #LIGHT}, re-stepped for the dark surface. */
-	public static final ChartTheme DARK = new ChartTheme(true,
-			new Color(0x1A, 0x1A, 0x19),
-			new Color(0xFF, 0xFF, 0xFF),
-			new Color(0x89, 0x87, 0x81),
-			new Color(0x2C, 0x2C, 0x2A),
-			new Color(0x39, 0x87, 0xE5),
-			new Color(0x38, 0x38, 0x35),
+	/** Newsprint: a cool off-white sheet, true-black headlines, and the restrained inks of a broadsheet. */
+	public static final ChartTheme GAZETTE = new ChartTheme(false,
+			new Color(0xF4, 0xF3, 0xEE),   // surface
+			new Color(0x1A, 0x1A, 0x18),   // text
+			new Color(0x77, 0x76, 0x6E),   // muted
+			new Color(0xDB, 0xD9, 0xD0),   // hairline
+			new Color(0xAB, 0x41, 0x3E),   // accent (the masthead red)
+			new Color(0xE9, 0xE7, 0xDE),   // elevated
 			List.of(
-					new Color(0x39, 0x87, 0xE5),
-					new Color(0x19, 0x9E, 0x70),
-					new Color(0xC9, 0x85, 0x00),
-					new Color(0x00, 0x83, 0x00),
-					new Color(0x90, 0x85, 0xE9),
-					new Color(0xE6, 0x67, 0x67),
-					new Color(0xD5, 0x51, 0x81),
-					new Color(0xD9, 0x59, 0x26)));
+					new Color(0xAB, 0x41, 0x3E),    // masthead red
+					new Color(0xB7, 0x9D, 0x33),    // mustard
+					new Color(0x31, 0x54, 0x8F),    // ink navy
+					new Color(0xC0, 0x83, 0x43),    // sepia
+					new Color(0x28, 0x6E, 0x3C),    // forest
+					new Color(0x8F, 0x6F, 0xB2),    // plum
+					new Color(0x91, 0x3E, 0x55),    // rosewood
+					new Color(0x03, 0x99, 0x9F)));  // petrol
+
+	/** An old map: aged chart-paper tan, cartographer's navy, and the inks of a hand-coloured atlas. */
+	public static final ChartTheme ATLAS = new ChartTheme(false,
+			new Color(0xF2, 0xE8, 0xD5),   // surface
+			new Color(0x3B, 0x2F, 0x22),   // text
+			new Color(0x8F, 0x7F, 0x66),   // muted
+			new Color(0xDF, 0xD2, 0xB8),   // hairline
+			new Color(0x28, 0x56, 0x8E),   // accent (map navy)
+			new Color(0xE9, 0xDD, 0xC4),   // elevated
+			List.of(
+					new Color(0x28, 0x56, 0x8E),    // map navy
+					new Color(0xBF, 0x6F, 0x33),    // sienna
+					new Color(0x00, 0x7F, 0x68),    // teal
+					new Color(0xBD, 0x9A, 0x32),    // gold
+					new Color(0x8F, 0x37, 0x34),    // oxblood
+					new Color(0xB5, 0x64, 0x72),    // dusty rose
+					new Color(0x32, 0x6D, 0x36),    // deep green
+					new Color(0x84, 0x6B, 0xAF)));  // ink violet
+
+	/** The dark companion to {@link #PAPER}: a warm near-black of dried ink, with the same inks lifted to read. */
+	public static final ChartTheme INKWELL = new ChartTheme(true,
+			new Color(0x20, 0x1B, 0x16),   // surface
+			new Color(0xF0, 0xE9, 0xDC),   // text
+			new Color(0x9A, 0x90, 0x83),   // muted
+			new Color(0x38, 0x30, 0x28),   // hairline
+			new Color(0xC7, 0x68, 0x3A),   // accent (ember)
+			new Color(0x32, 0x2A, 0x22),   // elevated
+			List.of(
+					new Color(0xC7, 0x68, 0x3A),    // ember
+					new Color(0x3C, 0x6A, 0xA4),    // dusty blue
+					new Color(0xB5, 0x8B, 0x22),    // brass
+					new Color(0x77, 0x63, 0xAB),    // wisteria
+					new Color(0x39, 0x9E, 0x78),    // verdigris
+					new Color(0x9E, 0x49, 0x60),    // rosewood
+					new Color(0x84, 0x96, 0x44),    // moss
+					new Color(0x96, 0x4A, 0x2F)));  // copper
+
+	/** A study after dark: deep viridian-black, brass-lamp light, and muted club-room colours. */
+	public static final ChartTheme NOCTURNE = new ChartTheme(true,
+			new Color(0x17, 0x21, 0x1D),   // surface
+			new Color(0xEA, 0xE6, 0xD8),   // text
+			new Color(0x8C, 0x94, 0x8A),   // muted
+			new Color(0x26, 0x33, 0x2D),   // hairline
+			new Color(0xB0, 0x8E, 0x21),   // accent (brass)
+			new Color(0x22, 0x30, 0x29),   // elevated
+			List.of(
+					new Color(0xB0, 0x8E, 0x21),    // brass
+					new Color(0x00, 0x86, 0x72),    // petrol
+					new Color(0xC3, 0x69, 0x53),    // coral
+					new Color(0x2E, 0x66, 0x9C),    // steel blue
+					new Color(0x8D, 0x97, 0x42),    // olive
+					new Color(0x9C, 0x4E, 0x6F),    // rose
+					new Color(0x4A, 0xA0, 0x76),    // lamp green
+					new Color(0x69, 0x5D, 0xA1)));  // lavender
 
 	/**
 	 * The series colour for {@code slot}. The base slots are the palette, untouched — existing charts keep

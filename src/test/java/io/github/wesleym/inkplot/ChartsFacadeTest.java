@@ -38,7 +38,7 @@ class ChartsFacadeTest {
 	void fluentOptionsApplyToTheComponent() {
 		ChartCanvas canvas = Charts.bar(new String[] { "A" }, new double[] { 2 })
 				.title("Rows", "1 row")
-				.theme(ChartTheme.DARK)
+				.theme(ChartTheme.INKWELL)
 				.legendBelow()
 				.notes("a note")
 				.component();

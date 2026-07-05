@@ -76,15 +76,18 @@ class ShowcaseTest {
 	void fourPalettesOneChart() throws Exception {
 		record Named(String name, ChartTheme theme) { }
 		Named[] palettes = {
-				new Named("Light — built in", ChartTheme.LIGHT),
-				new Named("Dark — built in", ChartTheme.DARK),
-				new Named("Paper — built in", ChartTheme.PAPER),
+				new Named("Paper — built in, the default", ChartTheme.PAPER),
+				new Named("Inkwell — built in", ChartTheme.INKWELL),
+				new Named("Gazette — built in", ChartTheme.GAZETTE),
+				new Named("Nocturne — built in", ChartTheme.NOCTURNE),
+				new Named("Atlas — built in", ChartTheme.ATLAS),
 				new Named("Midnight — custom", MIDNIGHT) };
 		int tileW = 560;
 		int tileH = 360;
 		int gap = 14;
+		int rows = (palettes.length + 1) / 2;
 		int w = 2 * tileW + 3 * gap;
-		int h = 2 * tileH + 3 * gap;
+		int h = rows * tileH + (rows + 1) * gap;
 		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

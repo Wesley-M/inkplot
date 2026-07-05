@@ -26,7 +26,7 @@ class LegendCapPreviewTest {
 
 	@Test
 	void rendersLargestSlicesWithACappedBottomLegend() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 
 		// Pre-aggregated, ordered smallest-first — like SELECT v, count(*) ... ORDER BY count(*).
 		List<List<String>> rows = new ArrayList<>();

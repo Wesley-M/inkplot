@@ -51,7 +51,7 @@ class ChartHoverPreviewTest {
 	}
 
 	private void renderHover(String name, ChartData data, Function<PlotContext, Point> picker) throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartCanvas canvas = new ChartCanvas(theme);
 		canvas.setData(data);
 		canvas.setSize(W, H);

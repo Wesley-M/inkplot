@@ -38,7 +38,7 @@ class WaffleRendererTest {
 		// (which the hover silhouette paints as solid) must hit-test to their cells, never to nothing.
 		WaffleRenderer renderer = new WaffleRenderer(ChartFixtures.waffle());
 		PlotContext ctx = new PlotContext(new Rectangle(0, 0, 640, 400), null, null,
-				ChartTheme.LIGHT, ChartHoverState.NONE);
+				ChartTheme.PAPER, ChartHoverState.NONE);
 		int y = 200;   // a mid-height scanline through the grid
 		int firstHit = -1;
 		int run = 0;

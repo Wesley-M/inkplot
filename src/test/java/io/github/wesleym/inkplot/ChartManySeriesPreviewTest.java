@@ -24,8 +24,8 @@ class ChartManySeriesPreviewTest {
 
 	@Test
 	void manySeriesGetDistinctShadesAndAWrappingLegend() throws Exception {
-		render("dark", ChartTheme.DARK);
-		render("light", ChartTheme.LIGHT);
+		render("dark", ChartTheme.INKWELL);
+		render("light", ChartTheme.PAPER);
 	}
 
 	private void render(String themeId, ChartTheme theme) throws Exception {

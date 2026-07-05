@@ -22,7 +22,7 @@ class DoughnutRendererTest {
 	void calloutLabelsHitTestAsTheirSlice() {
 		DoughnutRenderer renderer = new DoughnutRenderer(ChartFixtures.doughnutTail());
 		PlotContext ctx = new PlotContext(new Rectangle(0, 0, 640, 400), null, null,
-				ChartTheme.LIGHT, ChartHoverState.NONE);
+				ChartTheme.PAPER, ChartHoverState.NONE);
 
 		// The far-left band lies entirely outside any possible ring radius (the ring fits within height/2 of the
 		// centre), so any hit found there can only be a callout label standing in for its slice.
@@ -41,7 +41,7 @@ class DoughnutRendererTest {
 
 	@Test
 	void semanticSliceColorsOverrideThePaletteWherePresent() {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		// The caller supplies semantic colours (a positive green, a danger red); the third (unparsed) slice
 		// is left null and must keep its series-palette slot.
 		Color positive = new Color(0x0C, 0xA3, 0x0C);

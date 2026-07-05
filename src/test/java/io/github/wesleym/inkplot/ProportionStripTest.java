@@ -40,7 +40,7 @@ class ProportionStripTest {
 	}
 
 	private static ProportionStrip strip() {
-		ProportionStrip strip = new ProportionStrip(ChartTheme.LIGHT);
+		ProportionStrip strip = new ProportionStrip(ChartTheme.PAPER);
 		strip.setSize(100, 8);   // never shown, so setSegments paints complete (progress 1) — widths are exact
 		strip.setRemainder("Null", 14_123);
 		return strip;

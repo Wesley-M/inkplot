@@ -24,8 +24,8 @@ class ChartColorByCategoryPreviewTest {
 
 	@Test
 	void colorsEachCategoryAsAFullWidthBar() throws Exception {
-		render("light", ChartTheme.LIGHT);
-		render("dark", ChartTheme.DARK);
+		render("light", ChartTheme.PAPER);
+		render("dark", ChartTheme.INKWELL);
 	}
 
 	private void render(String themeId, ChartTheme theme) throws Exception {

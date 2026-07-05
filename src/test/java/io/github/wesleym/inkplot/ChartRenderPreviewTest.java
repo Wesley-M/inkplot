@@ -25,8 +25,11 @@ class ChartRenderPreviewTest {
 	record NamedTheme(String id, ChartTheme theme) { }
 
 	static final java.util.List<NamedTheme> THEMES = java.util.List.of(
-			new NamedTheme("light", ChartTheme.LIGHT),
-			new NamedTheme("dark", ChartTheme.DARK));
+			new NamedTheme("paper", ChartTheme.PAPER),
+			new NamedTheme("gazette", ChartTheme.GAZETTE),
+			new NamedTheme("atlas", ChartTheme.ATLAS),
+			new NamedTheme("inkwell", ChartTheme.INKWELL),
+			new NamedTheme("nocturne", ChartTheme.NOCTURNE));
 
 	@Test
 	void rendersEveryChartTypeAcrossEveryPalette() throws Exception {
@@ -52,7 +55,7 @@ class ChartRenderPreviewTest {
 	// The headline + rows subtitle render inside the surface, so PNG/clipboard exports carry their own context.
 	@Test
 	void rendersTheTitledChartExportsShip() throws Exception {
-		ChartTheme theme = ChartTheme.LIGHT;
+		ChartTheme theme = ChartTheme.PAPER;
 		ChartCanvas canvas = new ChartCanvas(theme);
 		canvas.setData(ChartFixtures.barSingle());
 		canvas.setTitle("Count by status", "21,830 rows");

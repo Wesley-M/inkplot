@@ -1,0 +1,30 @@
+// inkplot — a self-contained Swing charting library (mirrored to the standalone repo; see its README).
+// No dependencies beyond the JDK, by design: the app is just a consumer, and the module lifts out clean.
+plugins {
+    id 'java-library'
+}
+
+group = 'io.github.wesleym'
+version = '0.1.0'
+
+repositories {
+    mavenCentral()
+}
+
+// Compiled against the Java 21 API with whatever JDK runs Gradle (needs 21+), so consumers don't
+// inherit any particular toolchain.
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty 'java.awt.headless', 'true'
+}

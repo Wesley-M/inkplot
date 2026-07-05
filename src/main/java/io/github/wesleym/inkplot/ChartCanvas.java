@@ -1,0 +1,858 @@
+package io.github.wesleym.inkplot;
+
+import io.github.wesleym.inkplot.data.ChartData;
+import io.github.wesleym.inkplot.render.AxisRenderer;
+import io.github.wesleym.inkplot.render.ChartHoverState;
+import io.github.wesleym.inkplot.render.ChartInk;
+import io.github.wesleym.inkplot.render.ChartTooltipPainter;
+import io.github.wesleym.inkplot.render.CrosshairReadout;
+import io.github.wesleym.inkplot.render.LegendEntry;
+import io.github.wesleym.inkplot.render.MarkHit;
+import io.github.wesleym.inkplot.render.MarkRenderer;
+import io.github.wesleym.inkplot.render.PlotContext;
+import io.github.wesleym.inkplot.render.Renderers;
+import io.github.wesleym.inkplot.render.XAxisModel;
+import io.github.wesleym.inkplot.render.YAxisModel;
+import io.github.wesleym.inkplot.scale.LogTicks;
+import io.github.wesleym.inkplot.scale.NiceTicks;
+import io.github.wesleym.inkplot.scale.Scale;
+
+import javax.swing.JComponent;
+
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * The embeddable chart surface: given a prepared {@link ChartData} it lays out one plot — margins measured from the
+ * real label widths, one X and one Y axis, recessive gridlines behind the marks, a legend for multi-series data — and
+ * paints it. It is deliberately decoupled from the query-tab shell (it depends only on the theme and the chart data),
+ * so it drops into the insights panel or a full-screen frame unchanged.
+ *
+ * <p>The static chart is rendered once into a cached image and redrawn from it on a bare repaint; only a size, data,
+ * theme, or scale change rebuilds it, and the hover overlay paints on top without touching the cache. The same
+ * {@link #renderTo} path backs PNG export.
+ */
+public final class ChartCanvas extends JComponent {
+
+	/** Whether the value axis is linear or logarithmic (log offered only for strictly-positive data). */
+	public enum YScale { LINEAR, LOG }
+
+	/**
+	 * Where the legend block sits. {@code BOTTOM} also asks slice-labelled charts (the doughnut's callouts)
+	 * to emit legend entries instead — the compact, cohesive treatment for embedded charts.
+	 */
+	public enum LegendPlacement { TOP, BOTTOM }
+
+	private static final double BAND_INNER_PAD = 0.34;
+	private static final int OUTER_PAD = ChartStyle.SPACE_L;
+	private static final int AXIS_GAP = 6;
+
+	private ChartTheme theme;
+	private MarkRenderer renderer;
+	private YScale yScaleMode = YScale.LINEAR;
+	private LegendPlacement legendPlacement = LegendPlacement.TOP;
+	private List<String> notes = List.of();
+	private String title;      // optional headline drawn into the surface (and so into every export)
+	private String subtitle;   // muted context beside it, e.g. the rows covered
+
+	private ChartHoverState hover = ChartHoverState.NONE;
+	private PlotContext lastContext;
+
+	private double[] xZoom;         // view-only X-domain override from a brush, or null for the data's full range
+	private int brushStart = -1;    // drag anchor in pixels while a brush is being drawn (-1 = not brushing)
+	private int brushEnd;
+
+	// Screen-only viewport camera: a zoom + pan applied at paint time (never in renderTo), so PNG exports
+	// stay at 1:1 fit. Pointer coordinates are inverse-transformed back into base-image space before
+	// hover/brush/hit-testing. While a wheel/pan gesture is live, paint magnifies the cached bitmap (cheap
+	// enough to track the pointer); once the gesture settles, the view re-bakes as vectors under the camera
+	// transform, so a zoomed chart is as crisp as a fit one — the diagram canvas's settle-and-rebake pattern.
+	private static final double VIEW_ZOOM_STEP = 1.15;
+	private static final int VIEW_SETTLE_MS = 150;
+	private final ChartViewport viewport = new ChartViewport();
+	private final javax.swing.Timer viewSettle;
+	private boolean gestureActive;
+	private int panAnchorX = -1;   // pan-drag anchor in screen px while panning (-1 = not panning)
+	private int panAnchorY;
+
+	private BufferedImage baseLayer;
+	private boolean baseDirty = true;
+	private BufferedImage viewLayer;   // the settled camera view, baked crisp at device resolution
+	private boolean viewDirty = true;
+
+	public ChartCanvas(ChartTheme theme) {
+		this.theme = theme;
+		setOpaque(true);
+		viewSettle = new javax.swing.Timer(VIEW_SETTLE_MS, e -> settleView());
+		viewSettle.setRepeats(false);
+		MouseAdapter tracker = new MouseAdapter() {
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				Point p = toBase(e.getPoint());
+				setHover(ChartHoverState.at(p.x, p.y));
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				setHover(ChartHoverState.NONE);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (!javax.swing.SwingUtilities.isLeftMouseButton(e)) {
+					return;
+				}
+				// Once zoomed in, left-drag pans; at fit it starts the X-brush (data zoom) on brushable charts.
+				if (viewport.scale() > 1.0) {
+					panAnchorX = e.getX();
+					panAnchorY = e.getY();
+					return;
+				}
+				Point p = toBase(e.getPoint());
+				if (brushable() && lastContext != null && lastContext.plot().contains(p)) {
+					brushStart = p.x;
+					brushEnd = p.x;
+				}
+			}
+
+			@Override
+			public void mouseDragged(MouseEvent e) {
+				if (panAnchorX >= 0) {
+					viewport.panBy(e.getX() - panAnchorX, e.getY() - panAnchorY, getWidth(), getHeight());
+					panAnchorX = e.getX();
+					panAnchorY = e.getY();
+					gesture();
+				}
+				else if (brushStart >= 0) {
+					Rectangle plot = lastContext.plot();
+					brushEnd = Math.max(plot.x, Math.min(plot.x + plot.width, toBase(e.getPoint()).x));
+					repaint();
+				}
+				else {
+					Point p = toBase(e.getPoint());
+					setHover(ChartHoverState.at(p.x, p.y));
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (panAnchorX >= 0) {
+					panAnchorX = -1;
+					return;
+				}
+				if (brushStart < 0) {
+					return;
+				}
+				int a = Math.min(brushStart, brushEnd);
+				int b = Math.max(brushStart, brushEnd);
+				brushStart = -1;
+				// A sub-threshold drag is a click, not a zoom — never trap the reader in an accidental sliver.
+				if (b - a >= ChartStyle.px(8) && lastContext != null) {
+					setXZoom(invertX(lastContext.xScale(), a), invertX(lastContext.xScale(), b));
+				}
+				else {
+					repaint();
+				}
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
+					fitView();       // reset the viewport magnification…
+					clearXZoom();    // …and the brush data-zoom, so a double-click always returns to the full view
+				}
+			}
+		};
+		addMouseMotionListener(tracker);
+		addMouseListener(tracker);
+		addMouseWheelListener(e -> {
+			double rotation = e.getPreciseWheelRotation();
+			if (rotation != 0) {
+				zoomAt(e.getX(), e.getY(), Math.pow(VIEW_ZOOM_STEP, -rotation));
+			}
+		});
+	}
+
+	// A screen point mapped back into base-image (unzoomed) coordinates. All hover/brush/hit-testing runs in
+	// base-image space (renderTo draws there), so pointer input must land there too.
+	private Point toBase(Point screen) {
+		return viewport.toBase(screen);
+	}
+
+	// A wheel/drag gesture step: show it through the cheap bitmap blit now, and re-bake crisp vectors once
+	// the stream goes quiet.
+	private void gesture() {
+		gestureActive = true;
+		viewDirty = true;
+		viewSettle.restart();
+		repaint();
+	}
+
+	private void settleView() {
+		gestureActive = false;
+		repaint();
+	}
+
+	/** Zooms the viewport by {@code factor} about a screen pivot, keeping the point under the cursor fixed. */
+	private void zoomAt(int pivotX, int pivotY, double factor) {
+		if (viewport.zoomAt(pivotX, pivotY, factor, getWidth(), getHeight())) {
+			gesture();
+		}
+	}
+
+	/**
+	 * Zoom in / out about the canvas centre — the pill buttons. Discrete clicks re-bake crisp immediately;
+	 * only the high-frequency wheel/pan streams go through the gesture blit.
+	 */
+	public void zoomIn() {
+		zoomStep(VIEW_ZOOM_STEP);
+	}
+
+	public void zoomOut() {
+		zoomStep(1 / VIEW_ZOOM_STEP);
+	}
+
+	private void zoomStep(double factor) {
+		if (viewport.zoomAt(getWidth() / 2, getHeight() / 2, factor, getWidth(), getHeight())) {
+			viewDirty = true;
+			repaint();
+		}
+	}
+
+	/** Resets the viewport camera to fit (1:1). Does not touch the brush X-zoom. */
+	public void fitView() {
+		if (!viewport.atFit()) {
+			viewport.fit();
+			gestureActive = false;
+			viewSettle.stop();
+			viewLayer = null;   // fit blits the base layer; don't hold a stale camera bake
+			repaint();
+		}
+	}
+
+	/** True when the chart is magnified away from fit in either direction. */
+	public boolean isZoomed() {
+		return viewport.isZoomed();
+	}
+
+	/** Sets the data to draw (null clears it), rebuilding the renderer and invalidating the cached image. */
+	public void setData(ChartData data) {
+		this.renderer = data == null ? null : Renderers.of(data);
+		if (this.renderer != null) {
+			this.renderer.setPreferLegend(legendPlacement == LegendPlacement.BOTTOM);
+		}
+		this.xZoom = null;   // a new dataset means a new domain — never inherit the old brush
+		fitView();           // …nor the old viewport magnification
+		invalidateBase();
+	}
+
+	/**
+	 * Book-style figure notes: centred caption lines seated at the chart's bottom edge (under a bottom
+	 * legend), part of the rendered surface — so they travel with the chart into PNG exports too.
+	 */
+	public void setNotes(List<String> notes) {
+		this.notes = notes == null ? List.of() : List.copyOf(notes);
+		invalidateBase();
+		repaint();
+	}
+
+	/** Seats the legend at the top (default) or as a block under the plot; see {@link LegendPlacement}. */
+	public void setLegendPlacement(LegendPlacement placement) {
+		if (this.legendPlacement != placement) {
+			this.legendPlacement = placement;
+			if (renderer != null) {
+				renderer.setPreferLegend(placement == LegendPlacement.BOTTOM);
+			}
+			invalidateBase();
+			repaint();
+		}
+	}
+
+	/**
+	 * Zooms the X axis to {@code [min, max]} (data units; epoch-millis on a time axis) — a view-only override the
+	 * brush drives, applying to on-screen rendering and exports alike. Double-click (or {@link #clearXZoom}) resets.
+	 */
+	public void setXZoom(double min, double max) {
+		this.xZoom = new double[] { Math.min(min, max), Math.max(min, max) };
+		invalidateBase();
+	}
+
+	public void clearXZoom() {
+		if (xZoom != null) {
+			xZoom = null;
+			invalidateBase();
+		}
+	}
+
+	/** Whether the current chart admits a brush zoom: a continuous or time X, never a band or an axis-free chart. */
+	public boolean brushable() {
+		return renderer != null && !renderer.axisFree() && !(renderer.xModel() instanceof XAxisModel.Band);
+	}
+
+	private static double invertX(Scale scale, int px) {
+		return switch (scale) {
+			case Scale.Linear linear -> linear.invert(px);
+			case Scale.Log log -> log.invert(px);
+			case Scale.Time time -> time.invert(px);
+			case Scale.Band band -> Double.NaN;   // band axes are never brushable
+		};
+	}
+
+	/**
+	 * Sets the headline drawn inside the chart surface — "Sum of amount by region" over a muted rows subtitle —
+	 * so on-screen charts and PNG/clipboard exports alike say what they show. Null clears it (embedded
+	 * thumbnails, e.g. the insight cards, stay chrome-free).
+	 */
+	public void setTitle(String title, String subtitle) {
+		this.title = title;
+		this.subtitle = subtitle;
+		invalidateBase();
+	}
+
+	/** The renderer currently driving the canvas, or null when empty — the hover layer reads it. */
+	public MarkRenderer renderer() {
+		return renderer;
+	}
+
+	/** The last laid-out plot context (scales + plot rect), for the hover layer's hit-testing. */
+	public PlotContext plotContext() {
+		return lastContext;
+	}
+
+	public void setYScale(YScale mode) {
+		if (this.yScaleMode != mode) {
+			this.yScaleMode = mode;
+			invalidateBase();
+		}
+	}
+
+	public YScale yScale() {
+		return yScaleMode;
+	}
+
+	/** Whether the current data admits a log value axis (all-non-negative with some positive value). */
+	public boolean supportsLog() {
+		return renderer != null && renderer.yModel().allowLog();
+	}
+
+	/** Adopts the pointer state for the hover overlay; a bare repaint (no cache rebuild) reflects it. */
+	public void setHover(ChartHoverState state) {
+		this.hover = state == null ? ChartHoverState.NONE : state;
+		repaint();
+	}
+
+	public ChartHoverState hover() {
+		return hover;
+	}
+
+	public void restyle(ChartTheme theme) {
+		this.theme = theme;
+		invalidateBase();
+	}
+
+	private void invalidateBase() {
+		baseDirty = true;
+		viewDirty = true;
+		repaint();
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		// Honour an explicit setPreferredSize (e.g. a small embedded histogram in the insights card); otherwise a
+		// comfortable default for a standalone chart.
+		return isPreferredSizeSet() ? super.getPreferredSize() : new Dimension(ChartStyle.px(480), ChartStyle.px(300));
+	}
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		int w = getWidth();
+		int h = getHeight();
+		if (w <= 0 || h <= 0) {
+			return;
+		}
+		if (baseDirty || baseLayer == null || baseLayer.getWidth() != w || baseLayer.getHeight() != h) {
+			baseLayer = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D bg = baseLayer.createGraphics();
+			applyHints(bg);
+			renderTo(bg, w, h);
+			bg.dispose();
+			baseDirty = false;
+			viewDirty = true;
+		}
+		// The camera never touches renderTo, so the cached base image — and every PNG/clipboard export —
+		// stays at 1:1 fit. At fit the base blits straight through; mid-gesture it blits magnified (smoothed,
+		// but a bitmap); settled it swaps for the crisp vector bake of the camera view.
+		viewport.clamp(w, h);
+		Graphics2D g2 = (Graphics2D) g.create();
+		if (viewport.atFit()) {
+			g2.drawImage(baseLayer, 0, 0, null);
+		}
+		else if (gestureActive) {
+			g2.setColor(theme.surface());
+			g2.fillRect(0, 0, w, h);   // a below-fit blit leaves margins around the shrunk chart
+			Graphics2D blit = (Graphics2D) g2.create();
+			blit.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			blit.translate(viewport.offsetX(), viewport.offsetY());
+			blit.scale(viewport.scale(), viewport.scale());
+			blit.drawImage(baseLayer, 0, 0, null);
+			blit.dispose();
+		}
+		else {
+			ensureViewLayer(w, h, deviceScale(g2));
+			g2.drawImage(viewLayer, 0, 0, w, h, null);
+		}
+		// The overlays draw in base coordinates through the camera transform, in every branch.
+		if (!viewport.atFit()) {
+			g2.translate(viewport.offsetX(), viewport.offsetY());
+			g2.scale(viewport.scale(), viewport.scale());
+		}
+		paintBrushOverlay(g2);
+		if (brushStart < 0) {
+			paintHoverOverlay(g2);
+		}
+		g2.dispose();
+	}
+
+	// The display's device-pixel ratio (>1 under HiDPI scaling), so the settled bake lands on real pixels.
+	private static double deviceScale(Graphics2D g) {
+		return Math.max(1.0, g.getTransform().getScaleX());
+	}
+
+	// Re-renders the camera view as vectors into a device-resolution buffer — the crisp image a settled zoom
+	// blits on every subsequent repaint (hover moves must not re-render the whole chart).
+	private void ensureViewLayer(int w, int h, double dpr) {
+		int pw = Math.max(1, (int) Math.round(w * dpr));
+		int ph = Math.max(1, (int) Math.round(h * dpr));
+		if (!viewDirty && viewLayer != null && viewLayer.getWidth() == pw && viewLayer.getHeight() == ph) {
+			return;
+		}
+		viewLayer = new BufferedImage(pw, ph, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D vg = viewLayer.createGraphics();
+		applyHints(vg);
+		vg.scale(dpr, dpr);
+		vg.setColor(theme.surface());
+		vg.fillRect(0, 0, w, h);   // below fit, the chart covers only the centred part of the viewport
+		vg.translate(viewport.offsetX(), viewport.offsetY());
+		vg.scale(viewport.scale(), viewport.scale());
+		renderTo(vg, w, h);
+		vg.dispose();
+		viewDirty = false;
+	}
+
+	// The in-progress brush band and, once zoomed, a quiet reset hint — screen chrome only, never in an export
+	// (exports go through renderTo, which draws neither).
+	private void paintBrushOverlay(Graphics2D g) {
+		if (lastContext == null) {
+			return;
+		}
+		Rectangle plot = lastContext.plot();
+		Graphics2D g2 = (Graphics2D) g.create();
+		applyHints(g2);
+		if (brushStart >= 0) {
+			int x0 = Math.min(brushStart, brushEnd);
+			int x1 = Math.max(brushStart, brushEnd);
+			g2.setColor(ChartInk.alpha(theme.accent(), 0.12));
+			g2.fillRect(x0, plot.y, x1 - x0, plot.height);
+			g2.setColor(ChartInk.alpha(theme.accent(), 0.55));
+			g2.drawLine(x0, plot.y, x0, plot.y + plot.height);
+			g2.drawLine(x1, plot.y, x1, plot.y + plot.height);
+		}
+		else if (xZoom != null) {
+			g2.setFont(ChartStyle.caption());
+			FontMetrics fm = g2.getFontMetrics();
+			String hint = "zoomed — double-click to reset";
+			g2.setColor(theme.muted());
+			g2.drawString(hint, plot.x + plot.width - fm.stringWidth(hint) - ChartStyle.px(4),
+					plot.y + fm.getAscent() + ChartStyle.px(2));
+		}
+		g2.dispose();
+	}
+
+	// Draws the hover feedback on top of the cached static chart, so a pointer move never rebuilds the base image:
+	// a snapping crosshair with an all-series read-out on line/density charts, or the lifted mark plus its tooltip on
+	// bar/scatter/box/histogram charts.
+	private void paintHoverOverlay(Graphics2D g) {
+		if (!hover.active() || renderer == null || lastContext == null) {
+			return;
+		}
+		Rectangle plot = lastContext.plot();
+		if (!plot.contains(hover.x(), hover.y())) {
+			return;
+		}
+		Graphics2D g2 = (Graphics2D) g.create();
+		applyHints(g2);
+		Rectangle bounds = new Rectangle(0, 0, getWidth(), getHeight());
+		if (renderer.usesCrosshair()) {
+			Optional<CrosshairReadout> readout = renderer.crosshairAt(lastContext, hover.x());
+			if (readout.isPresent()) {
+				int sx = (int) Math.round(readout.get().snapX());
+				g2.setColor(ChartInk.alpha(theme.muted(), 0.55));
+				g2.drawLine(sx, plot.y, sx, plot.y + plot.height);
+				ChartTooltipPainter.paint(g2, bounds, sx, hover.y(), readout.get().tooltip(), theme);
+			}
+		}
+		else {
+			Optional<MarkHit> hit = renderer.hitTest(lastContext, new Point(hover.x(), hover.y()));
+			if (hit.isPresent()) {
+				renderer.highlight(g2, lastContext, hit.get());
+				ChartTooltipPainter.paint(g2, bounds, hover.x(), hover.y(),
+						renderer.tooltip(lastContext, hit.get()), theme);
+			}
+		}
+		g2.dispose();
+	}
+
+	/**
+	 * Renders the whole chart into {@code g} at size {@code w×h} — the single drawing path shared by the on-screen
+	 * cache and PNG export. Fills the surface, measures margins from the label metrics, builds the scales, then draws
+	 * gridlines, marks, axes, and the legend.
+	 */
+	public void renderTo(Graphics2D g, int w, int h) {
+		g.setColor(theme.surface());
+		g.fillRect(0, 0, w, h);
+		if (renderer == null) {
+			return;
+		}
+
+		int outer = ChartStyle.px(OUTER_PAD);
+		int gap = ChartStyle.px(AXIS_GAP);
+		int titleH = drawTitle(g, w, outer);
+
+		Font caption = ChartStyle.caption();
+		g.setFont(caption);
+		FontMetrics fm = g.getFontMetrics();
+
+		List<LegendEntry> legend = renderer.legend(theme);
+		int legendAvail = w - 2 * outer;
+		int legendRows = legend.isEmpty() ? 0 : legendRows(fm, legend, legendAvail);
+		// The legend may claim at most a third of the surface: past that, entries fold into a "+ N more"
+		// tail instead of squeezing the plot below readability or clipping off the edge.
+		int maxLegendRows = Math.max(1, h / 3 / (fm.getHeight() + ChartStyle.px(2)));
+		if (legendRows > maxLegendRows) {
+			legend = capLegend(fm, legend, legendAvail, maxLegendRows);
+			legendRows = legendRows(fm, legend, legendAvail);
+		}
+		int legendH = legendRows == 0 ? 0
+				: legendRows * fm.getHeight() + (legendRows - 1) * ChartStyle.px(2) + ChartStyle.px(ChartStyle.SPACE_S);
+		boolean legendBelow = legendPlacement == LegendPlacement.BOTTOM;
+		int topMargin = outer + titleH + (legendBelow ? 0 : legendH);
+		// The figure notes claim the very bottom edge; a bottom legend sits directly above them.
+		int notesH = notes.isEmpty() ? 0 : notes.size() * fm.getHeight() + ChartStyle.px(ChartStyle.SPACE_XS);
+		int notesBaseline = h - notes.size() * fm.getHeight() - ChartStyle.px(OUTER_PAD) / 2 + fm.getAscent();
+		// The first legend baseline, in either placement: under the title, or in the block reserved above the
+		// bottom edge (the block height counts full line steps minus the trailing inter-line gap).
+		int legendBaseline = legendBelow
+				? h - notesH - (legendRows * (fm.getHeight() + ChartStyle.px(2)) - ChartStyle.px(2))
+						- ChartStyle.px(OUTER_PAD) / 2 + fm.getAscent()
+				: ChartStyle.px(OUTER_PAD) / 2 + titleH + fm.getAscent();
+
+		// An axis-free chart (doughnut, waffle) gets the whole padded surface as its plot, scale-less, and draws
+		// its own labelling inside it.
+		if (renderer.axisFree()) {
+			Rectangle plot = new Rectangle(outer, topMargin, w - 2 * outer,
+					h - topMargin - outer - (legendBelow ? legendH : 0) - notesH);
+			if (plot.width < ChartStyle.px(48) || plot.height < ChartStyle.px(32)) {
+				this.lastContext = null;
+				return;
+			}
+			PlotContext ctx = new PlotContext(plot, null, null, theme, hover);
+			this.lastContext = ctx;
+			renderer.paintMarks(g, ctx);
+			if (!legend.isEmpty()) {
+				drawLegend(g, fm, legend, outer, legendAvail, legendBaseline, legendBelow);
+			}
+			drawNotes(g, outer, legendAvail, notesBaseline);
+			return;
+		}
+
+		YAxisModel ym = renderer.yModel();
+		String[] yBands = renderer.yBands();
+		boolean log = yBands == null && yScaleMode == YScale.LOG && ym.allowLog();
+		YTicks yticks = yBands == null ? yTicks(ym, log, Math.max(2, h / ChartStyle.px(44))) : null;
+		// A band Y (horizontal bars) sizes its gutter from the real category names — the point of the orientation —
+		// capped so a monster label can't push the plot off the surface.
+		int maxYLabel = yBands != null ? Math.min(maxWidth(fm, yBands), Math.max(ChartStyle.px(80), w / 3))
+				: maxWidth(fm, yticks.labels());
+
+		int leftMargin = outer + maxYLabel + gap;
+		int rightMargin = outer + ChartStyle.px(8);
+
+		XAxisModel xm = renderer.xModel();
+		int bottomMargin = bottomMargin(fm, xm, w - leftMargin - rightMargin, outer, gap)
+				+ (legendBelow ? legendH : 0) + notesH;
+
+		Rectangle plot = new Rectangle(leftMargin, topMargin,
+				w - leftMargin - rightMargin, h - topMargin - bottomMargin);
+		if (plot.width < ChartStyle.px(48) || plot.height < ChartStyle.px(32)) {
+			this.lastContext = null;   // clear stale geometry so the hover overlay can't hit-test the old plot
+			return;   // too small to draw a legible plot
+		}
+
+		Scale yScale = yBands != null
+				? new Scale.Band(yBands.length, plot.y, plot.y + plot.height, BAND_INNER_PAD)
+				: log
+				? new Scale.Log(yticks.domainMin(), yticks.domainMax(), plot.y + plot.height, plot.y)
+				: new Scale.Linear(yticks.domainMin(), yticks.domainMax(), plot.y + plot.height, plot.y);
+
+		XBuild xb = buildX(xm, plot);
+		PlotContext ctx = new PlotContext(plot, xb.scale(), yScale, theme, hover);
+		this.lastContext = ctx;
+
+		if (yBands != null) {
+			AxisRenderer.axisYBand(g, theme, plot, (Scale.Band) yScale, yBands, maxYLabel);
+		}
+		else {
+			AxisRenderer.gridlinesY(g, theme, plot, yScale, yticks.values(), yticks.labels());
+		}
+		// Clip marks to the plot so nothing spills into the axis gutters — e.g. a log-axis zero bar (whose value
+		// clamps to a pixel below the baseline) or an out-of-domain point.
+		java.awt.Shape savedClip = g.getClip();
+		g.clipRect(plot.x, plot.y, plot.width, plot.height);
+		renderer.paintMarks(g, ctx);
+		g.setClip(savedClip);
+		if (xb.scale() instanceof Scale.Band band) {
+			AxisRenderer.axisXBand(g, theme, plot, band, band(xm));
+		}
+		else {
+			AxisRenderer.axisXContinuous(g, theme, plot, xb.tickPixels(), xb.tickLabels());
+		}
+		if (!legend.isEmpty()) {
+			drawLegend(g, fm, legend, outer, legendAvail, legendBaseline, legendBelow);
+		}
+		drawNotes(g, outer, legendAvail, notesBaseline);
+	}
+
+	// Figure notes in the book style: centred, muted, italic caption lines at the chart's bottom edge.
+	private void drawNotes(Graphics2D g, int left, int available, int firstBaseline) {
+		if (notes.isEmpty()) {
+			return;
+		}
+		g.setFont(ChartStyle.caption().deriveFont(Font.ITALIC));
+		FontMetrics fm = g.getFontMetrics();
+		g.setColor(theme.muted());
+		int y = firstBaseline;
+		for (String note : notes) {
+			String text = ellipsize(note, fm, available);
+			g.drawString(text, left + Math.max(0, (available - fm.stringWidth(text)) / 2), y);
+			y += fm.getHeight();
+		}
+	}
+
+	private static String ellipsize(String text, FontMetrics fm, int available) {
+		if (fm.stringWidth(text) <= available) {
+			return text;
+		}
+		String suffix = "...";
+		int end = text.length();
+		while (end > 0 && fm.stringWidth(text.substring(0, end) + suffix) > available) {
+			end--;
+		}
+		return end == 0 ? suffix : text.substring(0, end) + suffix;
+	}
+
+	// The headline row: the title in text ink with the muted subtitle beside it. Returns the height it claimed.
+	private int drawTitle(Graphics2D g, int w, int outer) {
+		if (title == null || title.isBlank()) {
+			return 0;
+		}
+		Font titleFont = ChartStyle.font(ChartStyle.BODY, Font.BOLD);
+		g.setFont(titleFont);
+		FontMetrics tm = g.getFontMetrics();
+		int baseline = ChartStyle.px(OUTER_PAD) / 2 + tm.getAscent();
+		g.setColor(theme.text());
+		g.drawString(title, outer, baseline);
+		if (subtitle != null && !subtitle.isBlank()) {
+			int x = outer + tm.stringWidth(title) + ChartStyle.px(ChartStyle.SPACE_S);
+			g.setFont(ChartStyle.caption());
+			g.setColor(theme.muted());
+			g.drawString(subtitle, x, baseline);
+		}
+		return tm.getHeight() + ChartStyle.px(4);
+	}
+
+	// ---- layout helpers ---------------------------------------------------------------------------------
+
+	private record YTicks(double domainMin, double domainMax, double[] values, String[] labels) { }
+
+	private YTicks yTicks(YAxisModel ym, boolean log, int target) {
+		if (log) {
+			LogTicks.Result r = LogTicks.of(ym.positiveMin(), ym.max());
+			return new YTicks(r.niceMin(), r.niceMax(), r.values(), r.labels());
+		}
+		NiceTicks.Result r = NiceTicks.linear(ym.min(), ym.max(), target);
+		return new YTicks(r.niceMin(), r.niceMax(), r.values(), AxisRenderer.labelsFor(r));
+	}
+
+	private record XBuild(Scale scale, double[] tickPixels, String[] tickLabels) { }
+
+	private XBuild buildX(XAxisModel xm, Rectangle plot) {
+		double px0 = plot.x;
+		double px1 = plot.x + plot.width;
+		return switch (xm) {
+			case XAxisModel.Band b -> new XBuild(new Scale.Band(b.categories().length, px0, px1, BAND_INNER_PAD),
+					new double[0], new String[0]);
+			case XAxisModel.Continuous c -> {
+				double lo = xZoom != null ? xZoom[0] : c.min();
+				double hi = xZoom != null ? xZoom[1] : c.max();
+				NiceTicks.Result r = NiceTicks.linear(lo, hi, Math.max(2, plot.width / ChartStyle.px(80)));
+				Scale.Linear scale = new Scale.Linear(r.niceMin(), r.niceMax(), px0, px1);
+				yield new XBuild(scale, mapAll(scale, r.values()), AxisRenderer.labelsFor(r));
+			}
+			case XAxisModel.Time t -> {
+				long lo = xZoom != null ? (long) xZoom[0] : t.min();
+				long hi = xZoom != null ? (long) xZoom[1] : t.max();
+				var r = io.github.wesleym.inkplot.scale.TimeTicks.of(
+						lo, hi, Math.max(2, plot.width / ChartStyle.px(90)));
+				Scale.Time scale = new Scale.Time(lo, hi, px0, px1);
+				double[] px = new double[r.values().length];
+				for (int i = 0; i < px.length; i++) {
+					px[i] = scale.map(r.values()[i]);
+				}
+				yield new XBuild(scale, px, r.labels());
+			}
+		};
+	}
+
+	private static String[] band(XAxisModel xm) {
+		return xm instanceof XAxisModel.Band b ? b.categories() : new String[0];
+	}
+
+	private static double[] mapAll(Scale scale, double[] values) {
+		double[] px = new double[values.length];
+		for (int i = 0; i < values.length; i++) {
+			px[i] = scale.map(values[i]);
+		}
+		return px;
+	}
+
+	private int bottomMargin(FontMetrics fm, XAxisModel xm, int plotWidthGuess, int outer, int gap) {
+		int captionH = fm.getHeight();
+		if (xm instanceof XAxisModel.Band b && b.categories().length > 0) {
+			double slot = (double) plotWidthGuess / b.categories().length;
+			int maxLabel = maxWidth(fm, b.categories());
+			if (maxLabel > slot - gap) {
+				return outer + Math.min(ChartStyle.px(72), (int) (maxLabel * 0.6) + captionH);
+			}
+			return outer + captionH;
+		}
+		return outer + captionH + gap;
+	}
+
+	// How many rows the legend wraps into for the available width — so a many-series legend stacks instead of overflowing.
+	private int legendRows(FontMetrics fm, List<LegendEntry> entries, int available) {
+		int swatch = ChartStyle.px(10);
+		int gap = ChartStyle.px(ChartStyle.SPACE_XS);
+		int itemGap = ChartStyle.px(ChartStyle.SPACE_M);
+		int x = 0;
+		int rows = 1;
+		for (LegendEntry e : entries) {
+			int itemW = swatch + gap + fm.stringWidth(e.label()) + itemGap;
+			if (x > 0 && x + itemW > available) {
+				rows++;
+				x = 0;
+			}
+			x += itemW;
+		}
+		return rows;
+	}
+
+	// Draws the legend left-aligned in the top band (below the title, when there is one), wrapping as needed.
+	// Trims a long legend to the allowed rows, appending a swatch-less muted "+ N more" tail for the rest.
+	private List<LegendEntry> capLegend(FontMetrics fm, List<LegendEntry> entries, int available, int maxRows) {
+		List<LegendEntry> shown = new ArrayList<>(entries);
+		while (shown.size() > 1) {
+			shown.remove(shown.size() - 1);
+			List<LegendEntry> withTail = new ArrayList<>(shown);
+			withTail.add(moreEntry(entries.size() - shown.size()));
+			if (legendRows(fm, withTail, available) <= maxRows) {
+				return withTail;
+			}
+		}
+		return List.of(moreEntry(entries.size()));
+	}
+
+	private static LegendEntry moreEntry(int hidden) {
+		return new LegendEntry(null, "+ " + hidden + " more", false);
+	}
+
+	// Wraps the entries into rows first, so a bottom-placed legend can centre each row under the plot; a
+	// top legend keeps the flush-left alignment it shares with the title.
+	private void drawLegend(Graphics2D g, FontMetrics fm, List<LegendEntry> entries, int left, int available,
+			int firstBaseline, boolean centred) {
+		int swatch = ChartStyle.px(10);
+		int gap = ChartStyle.px(ChartStyle.SPACE_XS);
+		int itemGap = ChartStyle.px(ChartStyle.SPACE_M);
+		int lineH = fm.getHeight() + ChartStyle.px(2);
+		List<List<LegendEntry>> rows = new ArrayList<>();
+		List<LegendEntry> row = new ArrayList<>();
+		int rowW = 0;
+		for (LegendEntry e : entries) {
+			int itemW = swatch + gap + fm.stringWidth(e.label()) + itemGap;
+			if (!row.isEmpty() && rowW + itemW > available) {
+				rows.add(row);
+				row = new ArrayList<>();
+				rowW = 0;
+			}
+			row.add(e);
+			rowW += itemW;
+		}
+		rows.add(row);
+
+		int y = firstBaseline;
+		for (List<LegendEntry> line : rows) {
+			int lineW = -itemGap;   // the trailing gap doesn't count against centring
+			for (LegendEntry e : line) {
+				lineW += swatch + gap + fm.stringWidth(e.label()) + itemGap;
+			}
+			int x = centred ? left + Math.max(0, (available - lineW) / 2) : left;
+			for (LegendEntry e : line) {
+				if (e.color() == null) {
+					// The swatch-less overflow tail ("+ N more") — muted text, no key.
+					g.setColor(theme.muted());
+					g.drawString(e.label(), x, y);
+					x += swatch + gap + fm.stringWidth(e.label()) + itemGap;
+					continue;
+				}
+				int mid = y - fm.getAscent() / 2 + 1;
+				g.setColor(e.color());
+				if (e.line()) {
+					g.fillRect(x, mid - ChartStyle.px(1), swatch, Math.max(1, ChartStyle.px(2)));
+				}
+				else {
+					g.fill(new Rectangle2D.Double(x, mid - swatch / 2.0, swatch, swatch));
+				}
+				g.setColor(theme.text());
+				g.drawString(e.label(), x + swatch + gap, y);
+				x += swatch + gap + fm.stringWidth(e.label()) + itemGap;
+			}
+			y += lineH;
+		}
+	}
+
+	private static int maxWidth(FontMetrics fm, String[] labels) {
+		int max = 0;
+		for (String label : labels) {
+			max = Math.max(max, fm.stringWidth(label));
+		}
+		return max;
+	}
+
+	private static void applyHints(Graphics2D g) {
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+	}
+}

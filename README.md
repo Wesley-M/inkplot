@@ -67,19 +67,17 @@ Charts.doughnut(
 
 <img src="docs/readme-doughnut.png" width="640" alt="Doughnut chart with direct labels">
 
-The same shares draw as a `Charts.waffle(...)` unit grid or, for skewed magnitudes, a squarified treemap —
-here with the built-in dark theme:
+The same shares draw as a `Charts.waffle(...)` unit grid or, for skewed magnitudes, a squarified treemap:
 
 ```java
 Charts.treemap(
         new String[] { "node_modules", ".git", "build", "src", "assets", "docs" },
         new double[] { 482, 130, 88, 34, 27, 9 })
         .title("Disk usage", "MB per folder")
-        .theme(ChartTheme.DARK)
         .component();
 ```
 
-<img src="docs/readme-treemap.png" width="640" alt="Treemap in the dark theme">
+<img src="docs/readme-treemap.png" width="640" alt="Treemap of disk usage">
 
 ## Distributions
 
@@ -123,11 +121,10 @@ Charts.bar("Q1", "Q2", "Q3", "Q4")
         .stacked()
         .legendBelow()
         .title("Generation mix", "GWh")
-        .theme(ChartTheme.DARK)
         .component();
 ```
 
-<img src="docs/readme-stacked.png" width="640" alt="Stacked bar chart in the dark theme">
+<img src="docs/readme-stacked.png" width="640" alt="Stacked bar chart of a generation mix">
 
 ## Table in, chart out
 

@@ -55,12 +55,11 @@ class ReadmeExamplesTest {
 	}
 
 	@Test
-	void treemapDark() throws Exception {
+	void treemapShares() throws Exception {
 		Chart chart = Charts.treemap(
 				new String[] { "node_modules", ".git", "build", "src", "assets", "docs" },
 				new double[] { 482, 130, 88, 34, 27, 9 })
-				.title("Disk usage", "MB per folder")
-				.theme(ChartTheme.DARK);
+				.title("Disk usage", "MB per folder");
 		write("readme-treemap", chart, 640, 400);
 	}
 
@@ -88,15 +87,14 @@ class ReadmeExamplesTest {
 	}
 
 	@Test
-	void stackedBarsDark() throws Exception {
+	void stackedBars() throws Exception {
 		Chart chart = Charts.bar("Q1", "Q2", "Q3", "Q4")
 				.series("Solar", 41, 54, 66, 48)
 				.series("Wind", 88, 72, 61, 94)
 				.series("Hydro", 33, 36, 31, 35)
 				.stacked()
 				.legendBelow()
-				.title("Generation mix", "GWh")
-				.theme(ChartTheme.DARK);
+				.title("Generation mix", "GWh");
 		write("readme-stacked", chart, 640, 400);
 	}
 

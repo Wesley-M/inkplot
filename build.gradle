@@ -53,6 +53,8 @@ def sampleMains = [
     ThemeGallery : 'live re-theming across the built-in family and a custom theme',
     ExplorerLite : 'the interactive-host pattern: pickers + async pipeline + one long-lived canvas',
     LiveDashboard: 'six live charts composed into one dashboard window',
+    StreamingFeed: 'advanced: a chart over data that never stops arriving (rolling table + superseding pipeline)',
+    InsightCards : 'advanced: embedded analytics cards via the power layer (ChartColumns, ChartBuilder, ChartNotice)',
 ]
 sampleMains.each { name, blurb ->
     tasks.register("run${name}", JavaExec) {

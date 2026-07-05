@@ -51,6 +51,8 @@ Five small windows to play with — each is a short, heavily-commented program u
 | `runThemeGallery` | Live re-theming across the built-in family and a custom theme. |
 | `runExplorerLite` | The interactive-host pattern: pickers + async pipeline + one long-lived canvas. |
 | `runLiveDashboard` | Six live charts composed into one dashboard window. |
+| `runStreamingFeed` | **Advanced** — a live feed: rolling table, superseding pipeline, re-rendering status strip. |
+| `runInsightCards` | **Advanced** — embedded analytics cards driven by the power layer: `ChartColumns` picks each column's form, `ChartBuilder` executes it, provenance feeds a `ChartNotice`. |
 
 Every window has the full interaction layer — hover, wheel zoom, drag-pan, brush, double-click reset —
 and the samples compile as part of `check`, so they can't rot.

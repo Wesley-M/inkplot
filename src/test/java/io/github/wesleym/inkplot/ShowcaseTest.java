@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class ShowcaseTest {
 
-	// A custom theme, defined exactly as the README shows it: deep blue-black surface, vivid series.
+	// A deep blue-black theme for the palette study.
 	static final ChartTheme MIDNIGHT = new ChartTheme(true,
 			new Color(0x10, 0x16, 0x22),    // surface
 			new Color(0xF2, 0xF5, 0xFA),    // text
@@ -36,7 +36,8 @@ class ShowcaseTest {
 					new Color(0x9B, 0x7E, 0xF7), new Color(0x38, 0xC6, 0xD9),
 					new Color(0xE9, 0x78, 0x52), new Color(0xC3, 0xD3, 0x4F)));
 
-	// A warm print-like light theme for the palette study.
+	// The custom theme the dashboard renders in, defined exactly as the README shows it: a warm,
+	// print-like surface with earthy series inks.
 	static final ChartTheme PAPER = new ChartTheme(false,
 			new Color(0xFA, 0xF6, 0xEF),
 			new Color(0x2B, 0x26, 0x20),
@@ -52,7 +53,7 @@ class ShowcaseTest {
 	private static final long DAY = 24L * 60 * 60 * 1000;
 
 	@Test
-	void midnightDashboard() throws Exception {
+	void paperDashboard() throws Exception {
 		Chart[][] tiles = {
 				{ revenue(), signups(), traffic() },
 				{ latency(), activation(), storage() } };
@@ -68,7 +69,7 @@ class ShowcaseTest {
 		Graphics2D g = img.createGraphics();
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g.setColor(new Color(0x0A, 0x0E, 0x17));   // the page plane behind the card tiles
+		g.setColor(new Color(0xE9, 0xE0, 0xCF));   // the warm page plane behind the card tiles
 		g.fillRect(0, 0, w, h);
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
@@ -77,7 +78,7 @@ class ShowcaseTest {
 				Graphics2D tg = (Graphics2D) g.create();
 				tg.translate(x, y);
 				tg.setClip(new RoundRectangle2D.Double(0, 0, tileW, tileH, 18, 18));
-				tiles[r][c].theme(MIDNIGHT).component().renderTo(tg, tileW, tileH);
+				tiles[r][c].theme(PAPER).component().renderTo(tg, tileW, tileH);
 				tg.dispose();
 			}
 		}
@@ -142,7 +143,7 @@ class ShowcaseTest {
 		}
 		BufferedImage img = chart
 				.title("Velocity by team", "12 series — 4 past the base palette")
-				.theme(MIDNIGHT)
+				.theme(PAPER)
 				.image(1020, 520);
 		write("showcase-spectrum", img);
 	}

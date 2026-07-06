@@ -84,7 +84,7 @@ public final class BarRenderer implements MarkRenderer {
 		SeriesEmphasis em = ctx.emphasis();
 		java.awt.Composite base = g.getComposite();
 		for (BarRect bar : rects(ctx)) {
-			if (em.isHidden(bar.series())) {
+			if (!em.visible(bar.series())) {
 				continue;
 			}
 			g.setComposite(em.composite(bar.series(), base));

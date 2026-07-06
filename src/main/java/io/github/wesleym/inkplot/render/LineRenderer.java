@@ -91,7 +91,7 @@ public final class LineRenderer implements MarkRenderer {
 		java.awt.Composite base = g.getComposite();
 		for (int s = 0; s < data.series().length; s++) {
 			ChartData.Line.Series series = data.series()[s];
-			if (series.x().length == 0 || em.isHidden(s)) {
+			if (series.x().length == 0 || !em.visible(s)) {
 				continue;
 			}
 			g.setComposite(em.composite(s, base));

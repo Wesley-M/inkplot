@@ -79,7 +79,7 @@ public final class ScatterRenderer implements MarkRenderer {
 		SeriesEmphasis em = ctx.emphasis();
 		for (int i = 0; i < n; i++) {
 			int s = seriesOf(i);
-			if (em.isHidden(s)) {
+			if (!em.visible(s)) {
 				continue;
 			}
 			double dim = em.dim(s);

@@ -109,8 +109,11 @@ public final class ChartCanvas extends JComponent {
 	// Interactive legend, multi-series charts only: click an entry to toggle its series off/on, hover to focus
 	// it and dim the rest. State lives here and feeds the renderer through the plot context; exports never see
 	// it. The hit rects are captured (in base coordinates) each time the base image is baked.
-	private boolean[] hidden = new boolean[0];
-	private int focusSeries = -1;
+	private boolean[] hidden = new boolean[0];   // toggle targets
+	private int focusSeries = -1;                // hover-focus target
+	private double[] seriesAlpha = new double[0];   // current per-series draw alpha, eased toward the targets
+	private final javax.swing.Timer legendTimer;
+	private static final double DIM_FOCUS = 0.22;   // a non-focused series eases down to this while another is focused
 	private final List<Rectangle> legendHitRects = new ArrayList<>();
 	private final List<Integer> legendHitSeries = new ArrayList<>();
 	private boolean capturingLegendHits;
@@ -123,6 +126,7 @@ public final class ChartCanvas extends JComponent {
 		viewSettle = new javax.swing.Timer(VIEW_SETTLE_MS, e -> settleView());
 		viewSettle.setRepeats(false);
 		introTimer = new javax.swing.Timer(16, e -> stepIntro());
+		legendTimer = new javax.swing.Timer(16, e -> stepLegend());
 		MouseAdapter tracker = new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
@@ -297,6 +301,9 @@ public final class ChartCanvas extends JComponent {
 		this.xZoom = null;   // a new dataset means a new domain — never inherit the old brush
 		this.hidden = new boolean[renderer == null ? 0 : renderer.legend(theme).size()];   // reset toggles
 		this.focusSeries = -1;
+		this.seriesAlpha = new double[hidden.length];
+		java.util.Arrays.fill(seriesAlpha, 1.0);
+		legendTimer.stop();
 		fitView();           // …nor the old viewport magnification
 		if (renderer != null && !introPlayed) {
 			introPending = true;   // play the entry animation once, on first appearance
@@ -433,7 +440,40 @@ public final class ChartCanvas extends JComponent {
 	}
 
 	private SeriesEmphasis emphasis() {
-		return focusSeries < 0 && !anyHidden() ? SeriesEmphasis.NONE : new SeriesEmphasis(hidden, focusSeries);
+		for (double a : seriesAlpha) {
+			if (a < 0.999) {
+				return new SeriesEmphasis(seriesAlpha);
+			}
+		}
+		return SeriesEmphasis.NONE;   // every series fully shown — the common case and every export
+	}
+
+	// The alpha a series should settle at: 0 when toggled off, dimmed when another is focused, else full.
+	private double targetAlpha(int s) {
+		if (s < hidden.length && hidden[s]) {
+			return 0;
+		}
+		return focusSeries < 0 || s == focusSeries ? 1.0 : DIM_FOCUS;
+	}
+
+	// One frame of the legend transition: ease each series' alpha toward its target and re-bake, until settled.
+	private void stepLegend() {
+		boolean settled = true;
+		for (int s = 0; s < seriesAlpha.length; s++) {
+			double target = targetAlpha(s);
+			double d = target - seriesAlpha[s];
+			if (Math.abs(d) > 0.004) {
+				seriesAlpha[s] += d * 0.28;
+				settled = false;
+			}
+			else {
+				seriesAlpha[s] = target;
+			}
+		}
+		invalidateBase();
+		if (settled) {
+			legendTimer.stop();
+		}
 	}
 
 	// The series index of the legend entry under a base-space point, or -1.
@@ -462,23 +502,21 @@ public final class ChartCanvas extends JComponent {
 			}
 		}
 		hidden[s] = !hidden[s];
-		invalidateBase();
+		startLegend();
 	}
 
 	private void setFocus(int s) {
 		if (focusSeries != s) {
 			focusSeries = s;
-			invalidateBase();
+			startLegend();
 		}
 	}
 
-	private boolean anyHidden() {
-		for (boolean b : hidden) {
-			if (b) {
-				return true;
-			}
+	// Animate the series alphas toward their new targets (idempotent — retargets a running transition).
+	private void startLegend() {
+		if (seriesAlpha.length > 0 && !legendTimer.isRunning()) {
+			legendTimer.restart();
 		}
-		return false;
 	}
 
 	// One frame of the entry animation: advance the eased reveal and re-bake the base at it. Ends at full.
@@ -498,6 +536,7 @@ public final class ChartCanvas extends JComponent {
 	@Override
 	public void removeNotify() {
 		introTimer.stop();
+		legendTimer.stop();
 		super.removeNotify();
 	}
 
@@ -671,13 +710,22 @@ public final class ChartCanvas extends JComponent {
 		paintChart(g, w, h, reveal);
 	}
 
-	// Legend-interaction hooks for tests (package-private, never public API).
+	// Legend-interaction hooks for tests (package-private, never public API). They settle the transition
+	// immediately, since no EDT timer runs the animation in a headless test.
 	void toggleSeriesForTest(int s) {
 		toggleSeries(s);
+		settleLegend();
 	}
 
 	void focusSeriesForTest(int s) {
 		focusSeries = s;
+		settleLegend();
+	}
+
+	private void settleLegend() {
+		for (int i = 0; i < seriesAlpha.length; i++) {
+			seriesAlpha[i] = targetAlpha(i);
+		}
 	}
 
 	// The chart at a given entry-reveal fraction (1.0 = full). Only the live base bake passes < 1 mid-animation;

@@ -49,6 +49,26 @@ class InteractiveLegendTest {
 				.theme(ChartTheme.PAPER).component();
 	}
 
+	private static ChartCanvas horizontalBars() {
+		return (ChartCanvas) Charts.bar("Mon", "Tue", "Wed", "Thu", "Fri")
+				.series("Espresso", 132, 148, 156, 161, 202)
+				.series("Filter", 98, 91, 104, 112, 151)
+				.series("Cold brew", 41, 44, 63, 70, 96)
+				.horizontal()
+				.theme(ChartTheme.PAPER).component();
+	}
+
+	@Test
+	void horizontalBarsHonourTheLegendToggleToo() throws Exception {
+		// The horizontal bar has its own renderer (HBarRenderer); it must apply the series emphasis and offer the
+		// interactive legend just like the vertical one, not sit inert.
+		ChartCanvas c = horizontalBars();
+		assertTrue(c.hasInteractiveLegendForTest(), "a multi-series horizontal bar has an interactive legend");
+		long all = ink(c, null);
+		c.toggleSeriesForTest(1);
+		assertTrue(ink(c, null) < all, "hiding a series in a horizontal bar draws fewer marks");
+	}
+
 	@Test
 	void togglingHidesASeries() throws Exception {
 		ChartCanvas c = bars();

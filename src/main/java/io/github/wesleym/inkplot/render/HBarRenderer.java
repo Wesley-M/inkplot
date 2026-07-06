@@ -75,10 +75,22 @@ public final class HBarRenderer implements MarkRenderer {
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		double radius = ChartStyle.px(4);
 		double baseline = baselineX(ctx);
+		SeriesEmphasis em = ctx.emphasis();
+		java.awt.Composite base = g.getComposite();
 		for (BarRect bar : rects(ctx)) {
+			if (!em.visible(bar.series())) {
+				continue;   // a legend-toggled-off series draws nothing
+			}
+			g.setComposite(em.composite(bar.series(), base));   // a focused-away series draws dimmed
 			g.setColor(fillFor(ctx.theme(), bar.series(), bar.category()));
 			g.fill(barShape(bar, radius, baseline));
 		}
+		g.setComposite(base);
+	}
+
+	@Override
+	public boolean interactiveSeries() {
+		return data.seriesCount() > 1;
 	}
 
 	@Override

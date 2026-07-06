@@ -554,17 +554,28 @@ public final class ChartCanvas extends JComponent {
 		if (w <= 0 || h <= 0) {
 			return;
 		}
-		if (introPending && renderer != null) {   // first valid paint with data — kick off the entry animation
+		// The entry animation is on-screen-only: it plays on the first paint of a canvas the reader can actually
+		// see. An offscreen or not-yet-realized paint (headless render, a bake before the component is shown)
+		// draws the settled chart at full reveal, exactly like the export path — no reader is there to watch it grow.
+		if (introPending && renderer != null && isShowing()) {   // first on-screen paint with data — kick off the entry animation
 			introPending = false;
 			introT = 0;
 			introReveal = 0;
 			baseDirty = true;
 			introTimer.restart();
 		}
-		if (baseDirty || baseLayer == null || baseLayer.getWidth() != w || baseLayer.getHeight() != h) {
-			baseLayer = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		// The base image is baked at DEVICE resolution (like the settled camera view), not logical, so the fit
+		// blit below lands on real pixels — otherwise on a HiDPI display the first (unzoomed) paint upscales a
+		// logical-size bitmap and reads soft until a zoom re-bakes it crisp. paintChart still draws in logical
+		// coordinates (the buffer's Graphics is pre-scaled), so hit rects and hover geometry stay logical.
+		double dpr = deviceScale((Graphics2D) g);
+		int bpw = Math.max(1, (int) Math.round(w * dpr));
+		int bph = Math.max(1, (int) Math.round(h * dpr));
+		if (baseDirty || baseLayer == null || baseLayer.getWidth() != bpw || baseLayer.getHeight() != bph) {
+			baseLayer = new BufferedImage(bpw, bph, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D bg = baseLayer.createGraphics();
 			applyHints(bg);
+			bg.scale(dpr, dpr);
 			capturingLegendHits = true;          // capture legend hit rects from this on-screen bake only
 			paintChart(bg, w, h, introReveal);   // reveal < 1 only mid-entry-animation
 			capturingLegendHits = false;
@@ -578,7 +589,7 @@ public final class ChartCanvas extends JComponent {
 		viewport.clamp(w, h);
 		Graphics2D g2 = (Graphics2D) g.create();
 		if (viewport.atFit()) {
-			g2.drawImage(baseLayer, 0, 0, null);
+			g2.drawImage(baseLayer, 0, 0, w, h, null);   // device-res buffer down to logical size — crisp on HiDPI
 		}
 		else if (gestureActive) {
 			g2.setColor(theme.surface());
@@ -587,7 +598,7 @@ public final class ChartCanvas extends JComponent {
 			blit.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 			blit.translate(viewport.offsetX(), viewport.offsetY());
 			blit.scale(viewport.scale(), viewport.scale());
-			blit.drawImage(baseLayer, 0, 0, null);
+			blit.drawImage(baseLayer, 0, 0, w, h, null);
 			blit.dispose();
 		}
 		else {
@@ -720,6 +731,14 @@ public final class ChartCanvas extends JComponent {
 	void focusSeriesForTest(int s) {
 		focusSeries = s;
 		settleLegend();
+	}
+
+	boolean hasInteractiveLegendForTest() {
+		return renderer != null && renderer.interactiveSeries();
+	}
+
+	int baseLayerWidthForTest() {
+		return baseLayer == null ? 0 : baseLayer.getWidth();
 	}
 
 	private void settleLegend() {

@@ -1,6 +1,7 @@
 package io.github.wesleym.inkplot;
 
 import io.github.wesleym.inkplot.data.ChartData;
+import io.github.wesleym.inkplot.render.SvgGraphics2D;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -100,5 +101,16 @@ public class Chart {
 		component().renderTo(g, width, height);
 		g.dispose();
 		return img;
+	}
+
+	/**
+	 * The chart rendered to a standalone SVG document at {@code width × height} — true vector, crisp at any
+	 * size. Text is outlined so the file needs no fonts to display identically anywhere. Pure JDK: no
+	 * dependency.
+	 */
+	public String toSvg(int width, int height) {
+		SvgGraphics2D svg = new SvgGraphics2D(width, height);
+		component().renderTo(svg, width, height);
+		return svg.document();
 	}
 }

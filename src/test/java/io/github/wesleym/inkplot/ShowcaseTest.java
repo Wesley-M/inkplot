@@ -2,15 +2,12 @@ package io.github.wesleym.inkplot;
 
 import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
-
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -40,36 +37,27 @@ class ShowcaseTest {
 
 	@Test
 	void paperDashboard() throws Exception {
-		Chart[][] tiles = {
-				{ revenue(), signups(), traffic() },
-				{ latency(), activation(), storage() } };
+		Chart[] tiles = { revenue(), signups(), traffic(), latency(), activation(), storage() };
 		int tileW = 500;
 		int tileH = 400;
-		int gap = 14;
-		int cols = tiles[0].length;
-		int rows = tiles.length;
-		int w = cols * tileW + (cols + 1) * gap;
-		int h = rows * tileH + (rows + 1) * gap;
-
-		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g = img.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g.setColor(new Color(0xE9, 0xE0, 0xCF));   // the warm page plane behind the card tiles
-		g.fillRect(0, 0, w, h);
-		for (int r = 0; r < rows; r++) {
-			for (int c = 0; c < cols; c++) {
-				int x = gap + c * (tileW + gap);
-				int y = gap + r * (tileH + gap);
-				Graphics2D tg = (Graphics2D) g.create();
-				tg.translate(x, y);
-				tg.setClip(new RoundRectangle2D.Double(0, 0, tileW, tileH, 18, 18));
-				tiles[r][c].theme(ChartTheme.PAPER).component().renderTo(tg, tileW, tileH);
-				tg.dispose();
-			}
+		List<String> frames = new ArrayList<>();
+		for (Chart tile : tiles) {
+			frames.add(ChartSvg.content(tile, ChartTheme.PAPER, tileW, tileH));
 		}
-		g.dispose();
-		write("showcase-dashboard", img);
+		write("showcase-dashboard", ChartSvg.tiles(frames, 3, tileW, tileH, 14, new Color(0xE9, 0xE0, 0xCF)));
+	}
+
+	// The animated hero: the same six charts, cross-fading one into the next — inkplot's range, in one loop.
+	@Test
+	void heroReel() throws Exception {
+		Chart[] tiles = { revenue(), signups(), traffic(), latency(), activation(), storage() };
+		int w = 900;
+		int h = 520;
+		List<String> frames = new ArrayList<>();
+		for (Chart tile : tiles) {
+			frames.add(ChartSvg.content(tile, ChartTheme.PAPER, w, h));
+		}
+		write("hero", ChartSvg.reel(frames, ChartTheme.PAPER.surface(), w, h, 24));
 	}
 
 	@Test
@@ -85,33 +73,16 @@ class ShowcaseTest {
 		int tileW = 560;
 		int tileH = 360;
 		int gap = 14;
-		int rows = (palettes.length + 1) / 2;
-		int w = 2 * tileW + 3 * gap;
-		int h = rows * tileH + (rows + 1) * gap;
-		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g = img.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g.setColor(new Color(0x60, 0x63, 0x6A));   // a neutral mat that neither palette family owns
-		g.fillRect(0, 0, w, h);
-		for (int i = 0; i < palettes.length; i++) {
-			int x = gap + (i % 2) * (tileW + gap);
-			int y = gap + (i / 2) * (tileH + gap);
-			Graphics2D tg = (Graphics2D) g.create();
-			tg.translate(x, y);
-			tg.setClip(new RoundRectangle2D.Double(0, 0, tileW, tileH, 18, 18));
-			Charts.bar("Mon", "Tue", "Wed", "Thu", "Fri")
+		List<String> frames = new ArrayList<>();
+		for (Named palette : palettes) {
+			Chart chart = Charts.bar("Mon", "Tue", "Wed", "Thu", "Fri")
 					.series("Espresso", 132, 148, 156, 161, 202)
 					.series("Filter", 98, 91, 104, 112, 151)
 					.series("Cold brew", 41, 44, 63, 70, 96)
-					.title(palettes[i].name())
-					.theme(palettes[i].theme())
-					.component()
-					.renderTo(tg, tileW, tileH);
-			tg.dispose();
+					.title(palette.name());
+			frames.add(ChartSvg.content(chart, palette.theme(), tileW, tileH));
 		}
-		g.dispose();
-		write("showcase-palettes", img);
+		write("showcase-palettes", ChartSvg.tiles(frames, 2, tileW, tileH, gap, new Color(0x60, 0x63, 0x6A)));
 	}
 
 	// Twelve series — four past the palette — so the golden-angle colour generation shows in one frame.
@@ -130,11 +101,10 @@ class ShowcaseTest {
 			}
 			chart.series("team-" + (char) ('a' + s), x, y);
 		}
-		BufferedImage img = chart
+		write("showcase-spectrum", chart
 				.title("Velocity by team", "12 series — 4 past the base palette")
 				.theme(ChartTheme.PAPER)
-				.image(1020, 520);
-		write("showcase-spectrum", img);
+				.toSvg(1020, 520));
 	}
 
 	// ---- the dashboard tiles -------------------------------------------------------------------------
@@ -209,9 +179,9 @@ class ShowcaseTest {
 				.title("Storage by service", "GB");
 	}
 
-	private static void write(String name, BufferedImage img) throws Exception {
-		File out = new File("build/" + name + ".png");
-		ImageIO.write(img, "png", out);
-		assertTrue(out.exists() && out.length() > 0, "showcase written: " + out);
+	private static void write(String name, String svg) throws Exception {
+		File out = new File("build/" + name + ".svg");
+		Files.writeString(out.toPath(), svg, StandardCharsets.UTF_8);
+		assertTrue(out.exists() && out.length() > 0 && svg.contains("</svg>"), "showcase written: " + out);
 	}
 }

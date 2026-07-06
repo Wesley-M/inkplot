@@ -1,0 +1,250 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1162" height="1136" viewBox="0 0 1162 1136" role="img">
+<defs><clipPath id="tile"><rect width="560" height="360" rx="18"/></clipPath></defs>
+<rect x="0" y="0" width="1162" height="1136" fill="#60636A"/>
+<g transform="translate(14 14)" clip-path="url(#tile)">
+<defs>
+<clipPath id="c1" clipPathUnits="userSpaceOnUse"><path d="M43 59 L536 59 L536 329 L43 329 L43 59 Z"/></clipPath>
+</defs>
+<path d="M0 0 L560 0 L560 360 L0 360 L0 0 Z" fill="#FAF6EF" fill-opacity="1"/>
+<text x="16" y="21" font-family="sans-serif" font-size="13" font-weight="bold" fill="#2B2620" fill-opacity="1">Paper — built in, the default</text>
+<path d="M43 329 L536 329" fill="none" stroke="#B9B2A5" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="30" y="334" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">0</text>
+<path d="M43 239 L536 239" fill="none" stroke="#E6DFD2" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="244" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">100</text>
+<path d="M43 149 L536 149" fill="none" stroke="#E6DFD2" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="154" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">200</text>
+<path d="M43 59 L536 59" fill="none" stroke="#E6DFD2" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="64" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">300</text>
+<path d="M60.762 329 L60.762 214.2 Q60.762 210.2 64.762 210.2 L76.454 210.2 Q80.454 210.2 80.454 214.2 L80.454 329 Z" fill="#B1512D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M82.454 329 L82.454 244.8 Q82.454 240.8 86.454 240.8 L98.146 240.8 Q102.146 240.8 102.146 244.8 L102.146 329 Z" fill="#007C5D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M104.146 329 L104.146 296.1 Q104.146 292.1 108.146 292.1 L119.838 292.1 Q123.838 292.1 123.838 296.1 L123.838 329 Z" fill="#B68B16" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M159.362 329 L159.362 199.8 Q159.362 195.8 163.362 195.8 L175.054 195.8 Q179.054 195.8 179.054 199.8 L179.054 329 Z" fill="#B1512D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M181.054 329 L181.054 251.1 Q181.054 247.1 185.054 247.1 L196.746 247.1 Q200.746 247.1 200.746 251.1 L200.746 329 Z" fill="#007C5D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M202.746 329 L202.746 293.4 Q202.746 289.4 206.746 289.4 L218.438 289.4 Q222.438 289.4 222.438 293.4 L222.438 329 Z" fill="#B68B16" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M257.962 329 L257.962 192.6 Q257.962 188.6 261.962 188.6 L273.654 188.6 Q277.654 188.6 277.654 192.6 L277.654 329 Z" fill="#B1512D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M279.654 329 L279.654 239.4 Q279.654 235.4 283.654 235.4 L295.346 235.4 Q299.346 235.4 299.346 239.4 L299.346 329 Z" fill="#007C5D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M301.346 329 L301.346 276.3 Q301.346 272.3 305.346 272.3 L317.038 272.3 Q321.038 272.3 321.038 276.3 L321.038 329 Z" fill="#B68B16" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M356.562 329 L356.562 188.1 Q356.562 184.1 360.562 184.1 L372.254 184.1 Q376.254 184.1 376.254 188.1 L376.254 329 Z" fill="#B1512D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M378.254 329 L378.254 232.2 Q378.254 228.2 382.254 228.2 L393.946 228.2 Q397.946 228.2 397.946 232.2 L397.946 329 Z" fill="#007C5D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M399.946 329 L399.946 270 Q399.946 266 403.946 266 L415.638 266 Q419.638 266 419.638 270 L419.638 329 Z" fill="#B68B16" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M455.162 329 L455.162 151.2 Q455.162 147.2 459.162 147.2 L470.854 147.2 Q474.854 147.2 474.854 151.2 L474.854 329 Z" fill="#B1512D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M476.854 329 L476.854 197.1 Q476.854 193.1 480.854 193.1 L492.546 193.1 Q496.546 193.1 496.546 197.1 L496.546 329 Z" fill="#007C5D" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M498.546 329 L498.546 246.6 Q498.546 242.6 502.546 242.6 L514.238 242.6 Q518.238 242.6 518.238 246.6 L518.238 329 Z" fill="#B68B16" fill-opacity="1" clip-path="url(#c1)"/>
+<text x="80" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">Mon</text>
+<text x="181" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">Tue</text>
+<text x="279" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">Wed</text>
+<text x="378" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">Thu</text>
+<text x="480" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C8478" fill-opacity="1">Fri</text>
+<path d="M16 30 L26 30 L26 40 L16 40 L16 30 Z" fill="#B1512D" fill-opacity="1"/>
+<text x="30" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#2B2620" fill-opacity="1">Espresso</text>
+<path d="M91 30 L101 30 L101 40 L91 40 L91 30 Z" fill="#007C5D" fill-opacity="1"/>
+<text x="105" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#2B2620" fill-opacity="1">Filter</text>
+<path d="M144 30 L154 30 L154 40 L144 40 L144 30 Z" fill="#B68B16" fill-opacity="1"/>
+<text x="158" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#2B2620" fill-opacity="1">Cold brew</text>
+</g>
+<g transform="translate(588 14)" clip-path="url(#tile)">
+<defs>
+<clipPath id="c1" clipPathUnits="userSpaceOnUse"><path d="M43 59 L536 59 L536 329 L43 329 L43 59 Z"/></clipPath>
+</defs>
+<path d="M0 0 L560 0 L560 360 L0 360 L0 0 Z" fill="#201B16" fill-opacity="1"/>
+<text x="16" y="21" font-family="sans-serif" font-size="13" font-weight="bold" fill="#F0E9DC" fill-opacity="1">Inkwell — built in</text>
+<path d="M43 329 L536 329" fill="none" stroke="#696056" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="30" y="334" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">0</text>
+<path d="M43 239 L536 239" fill="none" stroke="#383028" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="244" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">100</text>
+<path d="M43 149 L536 149" fill="none" stroke="#383028" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="154" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">200</text>
+<path d="M43 59 L536 59" fill="none" stroke="#383028" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="64" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">300</text>
+<path d="M60.762 329 L60.762 214.2 Q60.762 210.2 64.762 210.2 L76.454 210.2 Q80.454 210.2 80.454 214.2 L80.454 329 Z" fill="#C7683A" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M82.454 329 L82.454 244.8 Q82.454 240.8 86.454 240.8 L98.146 240.8 Q102.146 240.8 102.146 244.8 L102.146 329 Z" fill="#3C6AA4" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M104.146 329 L104.146 296.1 Q104.146 292.1 108.146 292.1 L119.838 292.1 Q123.838 292.1 123.838 296.1 L123.838 329 Z" fill="#B58B22" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M159.362 329 L159.362 199.8 Q159.362 195.8 163.362 195.8 L175.054 195.8 Q179.054 195.8 179.054 199.8 L179.054 329 Z" fill="#C7683A" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M181.054 329 L181.054 251.1 Q181.054 247.1 185.054 247.1 L196.746 247.1 Q200.746 247.1 200.746 251.1 L200.746 329 Z" fill="#3C6AA4" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M202.746 329 L202.746 293.4 Q202.746 289.4 206.746 289.4 L218.438 289.4 Q222.438 289.4 222.438 293.4 L222.438 329 Z" fill="#B58B22" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M257.962 329 L257.962 192.6 Q257.962 188.6 261.962 188.6 L273.654 188.6 Q277.654 188.6 277.654 192.6 L277.654 329 Z" fill="#C7683A" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M279.654 329 L279.654 239.4 Q279.654 235.4 283.654 235.4 L295.346 235.4 Q299.346 235.4 299.346 239.4 L299.346 329 Z" fill="#3C6AA4" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M301.346 329 L301.346 276.3 Q301.346 272.3 305.346 272.3 L317.038 272.3 Q321.038 272.3 321.038 276.3 L321.038 329 Z" fill="#B58B22" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M356.562 329 L356.562 188.1 Q356.562 184.1 360.562 184.1 L372.254 184.1 Q376.254 184.1 376.254 188.1 L376.254 329 Z" fill="#C7683A" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M378.254 329 L378.254 232.2 Q378.254 228.2 382.254 228.2 L393.946 228.2 Q397.946 228.2 397.946 232.2 L397.946 329 Z" fill="#3C6AA4" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M399.946 329 L399.946 270 Q399.946 266 403.946 266 L415.638 266 Q419.638 266 419.638 270 L419.638 329 Z" fill="#B58B22" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M455.162 329 L455.162 151.2 Q455.162 147.2 459.162 147.2 L470.854 147.2 Q474.854 147.2 474.854 151.2 L474.854 329 Z" fill="#C7683A" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M476.854 329 L476.854 197.1 Q476.854 193.1 480.854 193.1 L492.546 193.1 Q496.546 193.1 496.546 197.1 L496.546 329 Z" fill="#3C6AA4" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M498.546 329 L498.546 246.6 Q498.546 242.6 502.546 242.6 L514.238 242.6 Q518.238 242.6 518.238 246.6 L518.238 329 Z" fill="#B58B22" fill-opacity="1" clip-path="url(#c1)"/>
+<text x="80" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">Mon</text>
+<text x="181" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">Tue</text>
+<text x="279" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">Wed</text>
+<text x="378" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">Thu</text>
+<text x="480" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#9A9083" fill-opacity="1">Fri</text>
+<path d="M16 30 L26 30 L26 40 L16 40 L16 30 Z" fill="#C7683A" fill-opacity="1"/>
+<text x="30" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#F0E9DC" fill-opacity="1">Espresso</text>
+<path d="M91 30 L101 30 L101 40 L91 40 L91 30 Z" fill="#3C6AA4" fill-opacity="1"/>
+<text x="105" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#F0E9DC" fill-opacity="1">Filter</text>
+<path d="M144 30 L154 30 L154 40 L144 40 L144 30 Z" fill="#B58B22" fill-opacity="1"/>
+<text x="158" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#F0E9DC" fill-opacity="1">Cold brew</text>
+</g>
+<g transform="translate(14 388)" clip-path="url(#tile)">
+<defs>
+<clipPath id="c1" clipPathUnits="userSpaceOnUse"><path d="M43 59 L536 59 L536 329 L43 329 L43 59 Z"/></clipPath>
+</defs>
+<path d="M0 0 L560 0 L560 360 L0 360 L0 0 Z" fill="#F4F3EE" fill-opacity="1"/>
+<text x="16" y="21" font-family="sans-serif" font-size="13" font-weight="bold" fill="#1A1A18" fill-opacity="1">Gazette — built in</text>
+<path d="M43 329 L536 329" fill="none" stroke="#A9A89F" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="30" y="334" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">0</text>
+<path d="M43 239 L536 239" fill="none" stroke="#DBD9D0" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="244" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">100</text>
+<path d="M43 149 L536 149" fill="none" stroke="#DBD9D0" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="154" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">200</text>
+<path d="M43 59 L536 59" fill="none" stroke="#DBD9D0" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="64" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">300</text>
+<path d="M60.762 329 L60.762 214.2 Q60.762 210.2 64.762 210.2 L76.454 210.2 Q80.454 210.2 80.454 214.2 L80.454 329 Z" fill="#AB413E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M82.454 329 L82.454 244.8 Q82.454 240.8 86.454 240.8 L98.146 240.8 Q102.146 240.8 102.146 244.8 L102.146 329 Z" fill="#B79D33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M104.146 329 L104.146 296.1 Q104.146 292.1 108.146 292.1 L119.838 292.1 Q123.838 292.1 123.838 296.1 L123.838 329 Z" fill="#31548F" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M159.362 329 L159.362 199.8 Q159.362 195.8 163.362 195.8 L175.054 195.8 Q179.054 195.8 179.054 199.8 L179.054 329 Z" fill="#AB413E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M181.054 329 L181.054 251.1 Q181.054 247.1 185.054 247.1 L196.746 247.1 Q200.746 247.1 200.746 251.1 L200.746 329 Z" fill="#B79D33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M202.746 329 L202.746 293.4 Q202.746 289.4 206.746 289.4 L218.438 289.4 Q222.438 289.4 222.438 293.4 L222.438 329 Z" fill="#31548F" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M257.962 329 L257.962 192.6 Q257.962 188.6 261.962 188.6 L273.654 188.6 Q277.654 188.6 277.654 192.6 L277.654 329 Z" fill="#AB413E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M279.654 329 L279.654 239.4 Q279.654 235.4 283.654 235.4 L295.346 235.4 Q299.346 235.4 299.346 239.4 L299.346 329 Z" fill="#B79D33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M301.346 329 L301.346 276.3 Q301.346 272.3 305.346 272.3 L317.038 272.3 Q321.038 272.3 321.038 276.3 L321.038 329 Z" fill="#31548F" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M356.562 329 L356.562 188.1 Q356.562 184.1 360.562 184.1 L372.254 184.1 Q376.254 184.1 376.254 188.1 L376.254 329 Z" fill="#AB413E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M378.254 329 L378.254 232.2 Q378.254 228.2 382.254 228.2 L393.946 228.2 Q397.946 228.2 397.946 232.2 L397.946 329 Z" fill="#B79D33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M399.946 329 L399.946 270 Q399.946 266 403.946 266 L415.638 266 Q419.638 266 419.638 270 L419.638 329 Z" fill="#31548F" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M455.162 329 L455.162 151.2 Q455.162 147.2 459.162 147.2 L470.854 147.2 Q474.854 147.2 474.854 151.2 L474.854 329 Z" fill="#AB413E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M476.854 329 L476.854 197.1 Q476.854 193.1 480.854 193.1 L492.546 193.1 Q496.546 193.1 496.546 197.1 L496.546 329 Z" fill="#B79D33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M498.546 329 L498.546 246.6 Q498.546 242.6 502.546 242.6 L514.238 242.6 Q518.238 242.6 518.238 246.6 L518.238 329 Z" fill="#31548F" fill-opacity="1" clip-path="url(#c1)"/>
+<text x="80" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">Mon</text>
+<text x="181" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">Tue</text>
+<text x="279" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">Wed</text>
+<text x="378" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">Thu</text>
+<text x="480" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#77766E" fill-opacity="1">Fri</text>
+<path d="M16 30 L26 30 L26 40 L16 40 L16 30 Z" fill="#AB413E" fill-opacity="1"/>
+<text x="30" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#1A1A18" fill-opacity="1">Espresso</text>
+<path d="M91 30 L101 30 L101 40 L91 40 L91 30 Z" fill="#B79D33" fill-opacity="1"/>
+<text x="105" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#1A1A18" fill-opacity="1">Filter</text>
+<path d="M144 30 L154 30 L154 40 L144 40 L144 30 Z" fill="#31548F" fill-opacity="1"/>
+<text x="158" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#1A1A18" fill-opacity="1">Cold brew</text>
+</g>
+<g transform="translate(588 388)" clip-path="url(#tile)">
+<defs>
+<clipPath id="c1" clipPathUnits="userSpaceOnUse"><path d="M43 59 L536 59 L536 329 L43 329 L43 59 Z"/></clipPath>
+</defs>
+<path d="M0 0 L560 0 L560 360 L0 360 L0 0 Z" fill="#17211D" fill-opacity="1"/>
+<text x="16" y="21" font-family="sans-serif" font-size="13" font-weight="bold" fill="#EAE6D8" fill-opacity="1">Nocturne — built in</text>
+<path d="M43 329 L536 329" fill="none" stroke="#59645C" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="30" y="334" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">0</text>
+<path d="M43 239 L536 239" fill="none" stroke="#26332D" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="244" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">100</text>
+<path d="M43 149 L536 149" fill="none" stroke="#26332D" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="154" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">200</text>
+<path d="M43 59 L536 59" fill="none" stroke="#26332D" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="64" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">300</text>
+<path d="M60.762 329 L60.762 214.2 Q60.762 210.2 64.762 210.2 L76.454 210.2 Q80.454 210.2 80.454 214.2 L80.454 329 Z" fill="#B08E21" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M82.454 329 L82.454 244.8 Q82.454 240.8 86.454 240.8 L98.146 240.8 Q102.146 240.8 102.146 244.8 L102.146 329 Z" fill="#008672" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M104.146 329 L104.146 296.1 Q104.146 292.1 108.146 292.1 L119.838 292.1 Q123.838 292.1 123.838 296.1 L123.838 329 Z" fill="#C36953" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M159.362 329 L159.362 199.8 Q159.362 195.8 163.362 195.8 L175.054 195.8 Q179.054 195.8 179.054 199.8 L179.054 329 Z" fill="#B08E21" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M181.054 329 L181.054 251.1 Q181.054 247.1 185.054 247.1 L196.746 247.1 Q200.746 247.1 200.746 251.1 L200.746 329 Z" fill="#008672" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M202.746 329 L202.746 293.4 Q202.746 289.4 206.746 289.4 L218.438 289.4 Q222.438 289.4 222.438 293.4 L222.438 329 Z" fill="#C36953" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M257.962 329 L257.962 192.6 Q257.962 188.6 261.962 188.6 L273.654 188.6 Q277.654 188.6 277.654 192.6 L277.654 329 Z" fill="#B08E21" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M279.654 329 L279.654 239.4 Q279.654 235.4 283.654 235.4 L295.346 235.4 Q299.346 235.4 299.346 239.4 L299.346 329 Z" fill="#008672" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M301.346 329 L301.346 276.3 Q301.346 272.3 305.346 272.3 L317.038 272.3 Q321.038 272.3 321.038 276.3 L321.038 329 Z" fill="#C36953" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M356.562 329 L356.562 188.1 Q356.562 184.1 360.562 184.1 L372.254 184.1 Q376.254 184.1 376.254 188.1 L376.254 329 Z" fill="#B08E21" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M378.254 329 L378.254 232.2 Q378.254 228.2 382.254 228.2 L393.946 228.2 Q397.946 228.2 397.946 232.2 L397.946 329 Z" fill="#008672" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M399.946 329 L399.946 270 Q399.946 266 403.946 266 L415.638 266 Q419.638 266 419.638 270 L419.638 329 Z" fill="#C36953" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M455.162 329 L455.162 151.2 Q455.162 147.2 459.162 147.2 L470.854 147.2 Q474.854 147.2 474.854 151.2 L474.854 329 Z" fill="#B08E21" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M476.854 329 L476.854 197.1 Q476.854 193.1 480.854 193.1 L492.546 193.1 Q496.546 193.1 496.546 197.1 L496.546 329 Z" fill="#008672" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M498.546 329 L498.546 246.6 Q498.546 242.6 502.546 242.6 L514.238 242.6 Q518.238 242.6 518.238 246.6 L518.238 329 Z" fill="#C36953" fill-opacity="1" clip-path="url(#c1)"/>
+<text x="80" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">Mon</text>
+<text x="181" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">Tue</text>
+<text x="279" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">Wed</text>
+<text x="378" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">Thu</text>
+<text x="480" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8C948A" fill-opacity="1">Fri</text>
+<path d="M16 30 L26 30 L26 40 L16 40 L16 30 Z" fill="#B08E21" fill-opacity="1"/>
+<text x="30" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#EAE6D8" fill-opacity="1">Espresso</text>
+<path d="M91 30 L101 30 L101 40 L91 40 L91 30 Z" fill="#008672" fill-opacity="1"/>
+<text x="105" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#EAE6D8" fill-opacity="1">Filter</text>
+<path d="M144 30 L154 30 L154 40 L144 40 L144 30 Z" fill="#C36953" fill-opacity="1"/>
+<text x="158" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#EAE6D8" fill-opacity="1">Cold brew</text>
+</g>
+<g transform="translate(14 762)" clip-path="url(#tile)">
+<defs>
+<clipPath id="c1" clipPathUnits="userSpaceOnUse"><path d="M43 59 L536 59 L536 329 L43 329 L43 59 Z"/></clipPath>
+</defs>
+<path d="M0 0 L560 0 L560 360 L0 360 L0 0 Z" fill="#F2E8D5" fill-opacity="1"/>
+<text x="16" y="21" font-family="sans-serif" font-size="13" font-weight="bold" fill="#3B2F22" fill-opacity="1">Atlas — built in</text>
+<path d="M43 329 L536 329" fill="none" stroke="#B7A98F" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="30" y="334" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">0</text>
+<path d="M43 239 L536 239" fill="none" stroke="#DFD2B8" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="244" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">100</text>
+<path d="M43 149 L536 149" fill="none" stroke="#DFD2B8" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="154" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">200</text>
+<path d="M43 59 L536 59" fill="none" stroke="#DFD2B8" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="64" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">300</text>
+<path d="M60.762 329 L60.762 214.2 Q60.762 210.2 64.762 210.2 L76.454 210.2 Q80.454 210.2 80.454 214.2 L80.454 329 Z" fill="#28568E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M82.454 329 L82.454 244.8 Q82.454 240.8 86.454 240.8 L98.146 240.8 Q102.146 240.8 102.146 244.8 L102.146 329 Z" fill="#BF6F33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M104.146 329 L104.146 296.1 Q104.146 292.1 108.146 292.1 L119.838 292.1 Q123.838 292.1 123.838 296.1 L123.838 329 Z" fill="#007F68" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M159.362 329 L159.362 199.8 Q159.362 195.8 163.362 195.8 L175.054 195.8 Q179.054 195.8 179.054 199.8 L179.054 329 Z" fill="#28568E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M181.054 329 L181.054 251.1 Q181.054 247.1 185.054 247.1 L196.746 247.1 Q200.746 247.1 200.746 251.1 L200.746 329 Z" fill="#BF6F33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M202.746 329 L202.746 293.4 Q202.746 289.4 206.746 289.4 L218.438 289.4 Q222.438 289.4 222.438 293.4 L222.438 329 Z" fill="#007F68" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M257.962 329 L257.962 192.6 Q257.962 188.6 261.962 188.6 L273.654 188.6 Q277.654 188.6 277.654 192.6 L277.654 329 Z" fill="#28568E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M279.654 329 L279.654 239.4 Q279.654 235.4 283.654 235.4 L295.346 235.4 Q299.346 235.4 299.346 239.4 L299.346 329 Z" fill="#BF6F33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M301.346 329 L301.346 276.3 Q301.346 272.3 305.346 272.3 L317.038 272.3 Q321.038 272.3 321.038 276.3 L321.038 329 Z" fill="#007F68" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M356.562 329 L356.562 188.1 Q356.562 184.1 360.562 184.1 L372.254 184.1 Q376.254 184.1 376.254 188.1 L376.254 329 Z" fill="#28568E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M378.254 329 L378.254 232.2 Q378.254 228.2 382.254 228.2 L393.946 228.2 Q397.946 228.2 397.946 232.2 L397.946 329 Z" fill="#BF6F33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M399.946 329 L399.946 270 Q399.946 266 403.946 266 L415.638 266 Q419.638 266 419.638 270 L419.638 329 Z" fill="#007F68" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M455.162 329 L455.162 151.2 Q455.162 147.2 459.162 147.2 L470.854 147.2 Q474.854 147.2 474.854 151.2 L474.854 329 Z" fill="#28568E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M476.854 329 L476.854 197.1 Q476.854 193.1 480.854 193.1 L492.546 193.1 Q496.546 193.1 496.546 197.1 L496.546 329 Z" fill="#BF6F33" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M498.546 329 L498.546 246.6 Q498.546 242.6 502.546 242.6 L514.238 242.6 Q518.238 242.6 518.238 246.6 L518.238 329 Z" fill="#007F68" fill-opacity="1" clip-path="url(#c1)"/>
+<text x="80" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">Mon</text>
+<text x="181" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">Tue</text>
+<text x="279" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">Wed</text>
+<text x="378" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">Thu</text>
+<text x="480" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8F7F66" fill-opacity="1">Fri</text>
+<path d="M16 30 L26 30 L26 40 L16 40 L16 30 Z" fill="#28568E" fill-opacity="1"/>
+<text x="30" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#3B2F22" fill-opacity="1">Espresso</text>
+<path d="M91 30 L101 30 L101 40 L91 40 L91 30 Z" fill="#BF6F33" fill-opacity="1"/>
+<text x="105" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#3B2F22" fill-opacity="1">Filter</text>
+<path d="M144 30 L154 30 L154 40 L144 40 L144 30 Z" fill="#007F68" fill-opacity="1"/>
+<text x="158" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#3B2F22" fill-opacity="1">Cold brew</text>
+</g>
+<g transform="translate(588 762)" clip-path="url(#tile)">
+<defs>
+<clipPath id="c1" clipPathUnits="userSpaceOnUse"><path d="M43 59 L536 59 L536 329 L43 329 L43 59 Z"/></clipPath>
+</defs>
+<path d="M0 0 L560 0 L560 360 L0 360 L0 0 Z" fill="#101622" fill-opacity="1"/>
+<text x="16" y="21" font-family="sans-serif" font-size="13" font-weight="bold" fill="#F2F5FA" fill-opacity="1">Midnight — custom</text>
+<path d="M43 329 L536 329" fill="none" stroke="#545D6E" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="30" y="334" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">0</text>
+<path d="M43 239 L536 239" fill="none" stroke="#1D2635" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="244" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">100</text>
+<path d="M43 149 L536 149" fill="none" stroke="#1D2635" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="154" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">200</text>
+<path d="M43 59 L536 59" fill="none" stroke="#1D2635" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter"/>
+<text x="16" y="64" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">300</text>
+<path d="M60.762 329 L60.762 214.2 Q60.762 210.2 64.762 210.2 L76.454 210.2 Q80.454 210.2 80.454 214.2 L80.454 329 Z" fill="#5B8DEF" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M82.454 329 L82.454 244.8 Q82.454 240.8 86.454 240.8 L98.146 240.8 Q102.146 240.8 102.146 244.8 L102.146 329 Z" fill="#3ECF8E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M104.146 329 L104.146 296.1 Q104.146 292.1 108.146 292.1 L119.838 292.1 Q123.838 292.1 123.838 296.1 L123.838 329 Z" fill="#F5A623" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M159.362 329 L159.362 199.8 Q159.362 195.8 163.362 195.8 L175.054 195.8 Q179.054 195.8 179.054 199.8 L179.054 329 Z" fill="#5B8DEF" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M181.054 329 L181.054 251.1 Q181.054 247.1 185.054 247.1 L196.746 247.1 Q200.746 247.1 200.746 251.1 L200.746 329 Z" fill="#3ECF8E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M202.746 329 L202.746 293.4 Q202.746 289.4 206.746 289.4 L218.438 289.4 Q222.438 289.4 222.438 293.4 L222.438 329 Z" fill="#F5A623" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M257.962 329 L257.962 192.6 Q257.962 188.6 261.962 188.6 L273.654 188.6 Q277.654 188.6 277.654 192.6 L277.654 329 Z" fill="#5B8DEF" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M279.654 329 L279.654 239.4 Q279.654 235.4 283.654 235.4 L295.346 235.4 Q299.346 235.4 299.346 239.4 L299.346 329 Z" fill="#3ECF8E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M301.346 329 L301.346 276.3 Q301.346 272.3 305.346 272.3 L317.038 272.3 Q321.038 272.3 321.038 276.3 L321.038 329 Z" fill="#F5A623" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M356.562 329 L356.562 188.1 Q356.562 184.1 360.562 184.1 L372.254 184.1 Q376.254 184.1 376.254 188.1 L376.254 329 Z" fill="#5B8DEF" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M378.254 329 L378.254 232.2 Q378.254 228.2 382.254 228.2 L393.946 228.2 Q397.946 228.2 397.946 232.2 L397.946 329 Z" fill="#3ECF8E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M399.946 329 L399.946 270 Q399.946 266 403.946 266 L415.638 266 Q419.638 266 419.638 270 L419.638 329 Z" fill="#F5A623" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M455.162 329 L455.162 151.2 Q455.162 147.2 459.162 147.2 L470.854 147.2 Q474.854 147.2 474.854 151.2 L474.854 329 Z" fill="#5B8DEF" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M476.854 329 L476.854 197.1 Q476.854 193.1 480.854 193.1 L492.546 193.1 Q496.546 193.1 496.546 197.1 L496.546 329 Z" fill="#3ECF8E" fill-opacity="1" clip-path="url(#c1)"/>
+<path d="M498.546 329 L498.546 246.6 Q498.546 242.6 502.546 242.6 L514.238 242.6 Q518.238 242.6 518.238 246.6 L518.238 329 Z" fill="#F5A623" fill-opacity="1" clip-path="url(#c1)"/>
+<text x="80" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">Mon</text>
+<text x="181" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">Tue</text>
+<text x="279" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">Wed</text>
+<text x="378" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">Thu</text>
+<text x="480" y="347" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#8A93A6" fill-opacity="1">Fri</text>
+<path d="M16 30 L26 30 L26 40 L16 40 L16 30 Z" fill="#5B8DEF" fill-opacity="1"/>
+<text x="30" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#F2F5FA" fill-opacity="1">Espresso</text>
+<path d="M91 30 L101 30 L101 40 L91 40 L91 30 Z" fill="#3ECF8E" fill-opacity="1"/>
+<text x="105" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#F2F5FA" fill-opacity="1">Filter</text>
+<path d="M144 30 L154 30 L154 40 L144 40 L144 30 Z" fill="#F5A623" fill-opacity="1"/>
+<text x="158" y="40" font-family="sans-serif" font-size="11.5" font-weight="normal" fill="#F2F5FA" fill-opacity="1">Cold brew</text>
+</g>
+</svg>

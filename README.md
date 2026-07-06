@@ -11,11 +11,16 @@ interactive charts by default, and five vintage built-in themes, every palette m
 for colourblind separation.
 </p>
 
-<img src="docs/showcase-dashboard.png" alt="Six charts composed into a dashboard, custom Paper theme">
+<p align="center">
+  <img src="docs/hero.svg" width="820" alt="Six chart types — line, stacked bars, doughnut, histogram, scatter, treemap — cross-fading one into the next">
+</p>
 
-<sup>Six charts, one theme — the built-in `ChartTheme.PAPER` — composed headless by inkplot itself
-(`ShowcaseTest`), like every image on this page: the code shown is exactly what rendered the chart next
-to it, regenerated on every build so they can't drift apart.</sup>
+<sup>The charts inkplot draws — line, bar, doughnut, histogram, scatter, treemap — one after another, in
+the built-in `ChartTheme.PAPER`. Every image on this page is a crisp SVG rendered by the library itself.</sup>
+
+Or composed into a dashboard, all at once:
+
+<img src="docs/showcase-dashboard.svg" alt="Six charts composed into a dashboard, the built-in Paper theme">
 
 ## Quickstart
 
@@ -29,11 +34,12 @@ panel.add(Charts.bar("Mon", "Tue", "Wed", "Thu", "Fri")
         .component());
 ```
 
-<img src="docs/readme-quickstart.png" width="760" alt="Grouped bar chart: cups sold per weekday">
+<img src="docs/readme-quickstart.svg" width="760" alt="Grouped bar chart: cups sold per weekday">
 
 `component()` returns a live `JComponent`: hover tooltips, wheel zoom about the cursor, drag-to-pan, a
 brush X-zoom on continuous axes, double-click to reset — all on by default. Swap `component()` for
-`image(width, height)` to render headless (reports, tests, CI), like every image on this page.
+`image(width, height)` (raster) or `toSvg(width, height)` (crisp vector) to render headless — reports,
+tests, CI, or the images on this page.
 
 ## Run the samples
 
@@ -76,7 +82,7 @@ Charts.line().timeAxis()
         .component();
 ```
 
-<img src="docs/readme-line-time.png" width="760" alt="Time-series line chart with calendar ticks">
+<img src="docs/readme-line-time.svg" width="760" alt="Time-series line chart with calendar ticks">
 
 ## Shares of a whole
 
@@ -88,7 +94,7 @@ Charts.doughnut(
         .component();
 ```
 
-<img src="docs/readme-doughnut.png" width="640" alt="Doughnut chart with direct labels">
+<img src="docs/readme-doughnut.svg" width="640" alt="Doughnut chart with direct labels">
 
 The same shares draw as a `Charts.waffle(...)` unit grid or, for skewed magnitudes, a squarified treemap:
 
@@ -100,7 +106,7 @@ Charts.treemap(
         .component();
 ```
 
-<img src="docs/readme-treemap.png" width="640" alt="Treemap of disk usage">
+<img src="docs/readme-treemap.svg" width="640" alt="Treemap of disk usage">
 
 ## Distributions
 
@@ -118,7 +124,7 @@ Charts.histogram(responseMs)
         .component();
 ```
 
-<img src="docs/readme-histogram.png" width="640" alt="Histogram of response times">
+<img src="docs/readme-histogram.svg" width="640" alt="Histogram of response times">
 
 ## Long labels read sideways
 
@@ -132,7 +138,7 @@ Charts.bar("Billing and account questions", "Shipping and delivery delays",
         .component();
 ```
 
-<img src="docs/readme-horizontal.png" width="640" alt="Horizontal bar chart with long category labels">
+<img src="docs/readme-horizontal.svg" width="640" alt="Horizontal bar chart with long category labels">
 
 ## Stacked series
 
@@ -147,7 +153,7 @@ Charts.bar("Q1", "Q2", "Q3", "Q4")
         .component();
 ```
 
-<img src="docs/readme-stacked.png" width="640" alt="Stacked bar chart of a generation mix">
+<img src="docs/readme-stacked.svg" width="640" alt="Stacked bar chart of a generation mix">
 
 ## Table in, chart out
 
@@ -160,7 +166,7 @@ Table table = Table.of(List.of("region", "amount"), rows);
 Charts.bar(table, "region", "amount").title("Revenue by region", "4,000 rows").component();
 ```
 
-<img src="docs/readme-auto.png" width="640" alt="Bar chart built from a table by column names">
+<img src="docs/readme-auto.svg" width="640" alt="Bar chart built from a table by column names">
 
 One factory per question — `bar`, `line`, `scatter`, `histogram`, `density`, `doughnut`, `treemap`,
 `waffle`, `box` — with refinements where the form wants them, and `Charts.auto(table)` when you'd
@@ -190,8 +196,9 @@ the [charting tables guide](docs/charting-tables.md).
   any magnification, double-click to reset.
 - **Brush** — drag across a continuous or time X axis to zoom the data domain; axes re-derive.
 
-Exports (`image`, or `ChartCanvas.renderTo` on any `Graphics2D`) always render the full 1:1 view, never
-the transient screen viewport.
+Exports (`image` for raster, `toSvg` for vector, or `ChartCanvas.renderTo` on any `Graphics2D`) always
+render the full 1:1 view, never the transient screen viewport. The SVG is true vector (crisp at any size,
+text outlined so it needs no fonts) — pure JDK, no dependency.
 
 ## Theming
 
@@ -232,13 +239,13 @@ Charts.bar(cats, values).theme(midnight).component();
 
 The same chart across the family — the five built-ins plus that custom "Midnight":
 
-<img src="docs/showcase-palettes.png" alt="The same grouped bar chart in the five built-in themes and a custom one">
+<img src="docs/showcase-palettes.svg" alt="The same grouped bar chart in the five built-in themes and a custom one">
 
 Charts past the eighth series don't cycle the palette — extra slots generate distinct hues by
 golden-angle rotation across shade tiers, contrast-checked against the theme surface, so even a
 twelve-series spaghetti stays tellable-apart:
 
-<img src="docs/showcase-spectrum.png" alt="Twelve line series, four of them palette-generated">
+<img src="docs/showcase-spectrum.svg" alt="Twelve line series, four of them palette-generated">
 
 A host application with its own UI scale or font hands them over once, and every chart tracks them:
 
@@ -287,7 +294,7 @@ packages and nothing else:
 | Class | What it's for |
 |---|---|
 | `Charts` | The factories: one call per chart type, over plain values or a `Table` with columns by name. |
-| `Chart` / `BarChart` / `LineChart` | Fluent configuration ending in `component()` or `image(w, h)`. |
+| `Chart` / `BarChart` / `LineChart` | Fluent configuration ending in `component()`, `image(w, h)`, or `toSvg(w, h)`. |
 | `TableBarChart` / `TableLineChart` / `TableScatterChart` | Table charts refining fluently: `by(column)`, `stacked()`, `points()`. |
 | `ChartCanvas` | The live Swing widget; the stateful API interactive hosts hold on to. |
 | `ChartTheme` | Every colour as one immutable value; five validated built-ins. |

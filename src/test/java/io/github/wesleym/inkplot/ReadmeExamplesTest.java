@@ -3,10 +3,9 @@ package io.github.wesleym.inkplot;
 import io.github.wesleym.inkplot.data.Table;
 import org.junit.jupiter.api.Test;
 
-import javax.imageio.ImageIO;
-
-import java.awt.image.BufferedImage;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,9 +113,9 @@ class ReadmeExamplesTest {
 	}
 
 	private static void write(String name, Chart chart, int w, int h) throws Exception {
-		BufferedImage img = chart.image(w, h);
-		File out = new File("build/" + name + ".png");
-		ImageIO.write(img, "png", out);
-		assertTrue(out.exists() && out.length() > 0, "readme example written: " + out);
+		String svg = chart.toSvg(w, h);
+		File out = new File("build/" + name + ".svg");
+		Files.writeString(out.toPath(), svg, StandardCharsets.UTF_8);
+		assertTrue(out.exists() && out.length() > 0 && svg.contains("</svg>"), "readme example written: " + out);
 	}
 }

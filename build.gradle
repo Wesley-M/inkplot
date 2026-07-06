@@ -11,10 +11,10 @@ repositories {
     mavenCentral()
 }
 
-// Compiled against the Java 21 API with whatever JDK runs Gradle (needs 21+), so consumers don't
+// Compiled against the Java 17 API with whatever JDK runs Gradle (needs 17+), so consumers don't
 // inherit any particular toolchain.
 tasks.withType(JavaCompile).configureEach {
-    options.release = 21
+    options.release = 17
     options.encoding = 'UTF-8'
 }
 

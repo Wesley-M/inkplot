@@ -303,12 +303,20 @@ public final class ChartCanvas extends JComponent {
 	}
 
 	private static double invertX(Scale scale, int px) {
-		return switch (scale) {
-			case Scale.Linear linear -> linear.invert(px);
-			case Scale.Log log -> log.invert(px);
-			case Scale.Time time -> time.invert(px);
-			case Scale.Band band -> Double.NaN;   // band axes are never brushable
-		};
+		java.util.Objects.requireNonNull(scale, "scale");
+		if (scale instanceof Scale.Linear linear) {
+			return linear.invert(px);
+		}
+		if (scale instanceof Scale.Log log) {
+			return log.invert(px);
+		}
+		if (scale instanceof Scale.Time time) {
+			return time.invert(px);
+		}
+		if (scale instanceof Scale.Band) {
+			return Double.NaN;   // band axes are never brushable
+		}
+		throw new AssertionError("Unknown scale: " + scale.getClass().getName());
 	}
 
 	/**
@@ -711,29 +719,31 @@ public final class ChartCanvas extends JComponent {
 	private XBuild buildX(XAxisModel xm, Rectangle plot) {
 		double px0 = plot.x;
 		double px1 = plot.x + plot.width;
-		return switch (xm) {
-			case XAxisModel.Band b -> new XBuild(new Scale.Band(b.categories().length, px0, px1, BAND_INNER_PAD),
+		java.util.Objects.requireNonNull(xm, "xm");
+		if (xm instanceof XAxisModel.Band b) {
+			return new XBuild(new Scale.Band(b.categories().length, px0, px1, BAND_INNER_PAD),
 					new double[0], new String[0]);
-			case XAxisModel.Continuous c -> {
-				double lo = xZoom != null ? xZoom[0] : c.min();
-				double hi = xZoom != null ? xZoom[1] : c.max();
-				NiceTicks.Result r = NiceTicks.linear(lo, hi, Math.max(2, plot.width / ChartStyle.px(80)));
-				Scale.Linear scale = new Scale.Linear(r.niceMin(), r.niceMax(), px0, px1);
-				yield new XBuild(scale, mapAll(scale, r.values()), AxisRenderer.labelsFor(r));
+		}
+		if (xm instanceof XAxisModel.Continuous c) {
+			double lo = xZoom != null ? xZoom[0] : c.min();
+			double hi = xZoom != null ? xZoom[1] : c.max();
+			NiceTicks.Result r = NiceTicks.linear(lo, hi, Math.max(2, plot.width / ChartStyle.px(80)));
+			Scale.Linear scale = new Scale.Linear(r.niceMin(), r.niceMax(), px0, px1);
+			return new XBuild(scale, mapAll(scale, r.values()), AxisRenderer.labelsFor(r));
+		}
+		if (xm instanceof XAxisModel.Time t) {
+			long lo = xZoom != null ? (long) xZoom[0] : t.min();
+			long hi = xZoom != null ? (long) xZoom[1] : t.max();
+			var r = io.github.wesleym.inkplot.scale.TimeTicks.of(
+					lo, hi, Math.max(2, plot.width / ChartStyle.px(90)));
+			Scale.Time scale = new Scale.Time(lo, hi, px0, px1);
+			double[] px = new double[r.values().length];
+			for (int i = 0; i < px.length; i++) {
+				px[i] = scale.map(r.values()[i]);
 			}
-			case XAxisModel.Time t -> {
-				long lo = xZoom != null ? (long) xZoom[0] : t.min();
-				long hi = xZoom != null ? (long) xZoom[1] : t.max();
-				var r = io.github.wesleym.inkplot.scale.TimeTicks.of(
-						lo, hi, Math.max(2, plot.width / ChartStyle.px(90)));
-				Scale.Time scale = new Scale.Time(lo, hi, px0, px1);
-				double[] px = new double[r.values().length];
-				for (int i = 0; i < px.length; i++) {
-					px[i] = scale.map(r.values()[i]);
-				}
-				yield new XBuild(scale, px, r.labels());
-			}
-		};
+			return new XBuild(scale, px, r.labels());
+		}
+		throw new AssertionError("Unknown X axis model: " + xm.getClass().getName());
 	}
 
 	private static String[] band(XAxisModel xm) {

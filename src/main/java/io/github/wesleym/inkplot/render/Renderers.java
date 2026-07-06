@@ -11,16 +11,34 @@ public final class Renderers {
 	private Renderers() { }
 
 	public static MarkRenderer of(ChartData data) {
-		return switch (data) {
-			case ChartData.Bar bar -> bar.horizontal() ? new HBarRenderer(bar) : new BarRenderer(bar);
-			case ChartData.Doughnut doughnut -> new DoughnutRenderer(doughnut);
-			case ChartData.Waffle waffle -> new WaffleRenderer(waffle);
-			case ChartData.Treemap treemap -> new TreemapRenderer(treemap);
-			case ChartData.Line line -> new LineRenderer(line);
-			case ChartData.Histogram histogram -> new HistogramRenderer(histogram);
-			case ChartData.Density density -> new DensityRenderer(density);
-			case ChartData.Scatter scatter -> new ScatterRenderer(scatter);
-			case ChartData.Box box -> new BoxRenderer(box);
-		};
+		java.util.Objects.requireNonNull(data, "data");
+		if (data instanceof ChartData.Bar bar) {
+			return bar.horizontal() ? new HBarRenderer(bar) : new BarRenderer(bar);
+		}
+		if (data instanceof ChartData.Doughnut doughnut) {
+			return new DoughnutRenderer(doughnut);
+		}
+		if (data instanceof ChartData.Waffle waffle) {
+			return new WaffleRenderer(waffle);
+		}
+		if (data instanceof ChartData.Treemap treemap) {
+			return new TreemapRenderer(treemap);
+		}
+		if (data instanceof ChartData.Line line) {
+			return new LineRenderer(line);
+		}
+		if (data instanceof ChartData.Histogram histogram) {
+			return new HistogramRenderer(histogram);
+		}
+		if (data instanceof ChartData.Density density) {
+			return new DensityRenderer(density);
+		}
+		if (data instanceof ChartData.Scatter scatter) {
+			return new ScatterRenderer(scatter);
+		}
+		if (data instanceof ChartData.Box box) {
+			return new BoxRenderer(box);
+		}
+		throw new AssertionError("Unknown chart data: " + data.getClass().getName());
 	}
 }

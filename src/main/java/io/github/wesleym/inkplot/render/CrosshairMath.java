@@ -20,12 +20,20 @@ final class CrosshairMath {
 	private static final DateTimeFormatter TIME_LABEL_INTRADAY = DateTimeFormatter.ofPattern("MMM d, HH:mm", Locale.US);
 
 	static double invertX(Scale scale, double px) {
-		return switch (scale) {
-			case Scale.Linear l -> l.invert(px);
-			case Scale.Time t -> t.invert(px);
-			case Scale.Log log -> log.invert(px);
-			case Scale.Band b -> b.indexAt(px);
-		};
+		java.util.Objects.requireNonNull(scale, "scale");
+		if (scale instanceof Scale.Linear l) {
+			return l.invert(px);
+		}
+		if (scale instanceof Scale.Time t) {
+			return t.invert(px);
+		}
+		if (scale instanceof Scale.Log log) {
+			return log.invert(px);
+		}
+		if (scale instanceof Scale.Band b) {
+			return b.indexAt(px);
+		}
+		throw new AssertionError("Unknown scale: " + scale.getClass().getName());
 	}
 
 	/** The index in ascending {@code values} whose entry is closest to {@code target}. */

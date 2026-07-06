@@ -23,17 +23,35 @@ public final class ChartBuilder {
 	private ChartBuilder() { }
 
 	public static ChartData build(ChartSpec spec, Table snapshot, int plotWidth) {
-		return switch (spec) {
-			case ChartSpec.Bar bar -> bar(snapshot, bar);
-			case ChartSpec.Doughnut doughnut -> doughnut(snapshot, doughnut);
-			case ChartSpec.Waffle waffle -> waffle(snapshot, waffle);
-			case ChartSpec.Treemap treemap -> treemap(snapshot, treemap);
-			case ChartSpec.Line line -> line(snapshot, line);
-			case ChartSpec.Histogram histogram -> histogram(snapshot, histogram);
-			case ChartSpec.Density density -> density(snapshot, density);
-			case ChartSpec.Scatter scatter -> scatter(snapshot, scatter);
-			case ChartSpec.Box box -> box(snapshot, box);
-		};
+		java.util.Objects.requireNonNull(spec, "spec");
+		if (spec instanceof ChartSpec.Bar bar) {
+			return bar(snapshot, bar);
+		}
+		if (spec instanceof ChartSpec.Doughnut doughnut) {
+			return doughnut(snapshot, doughnut);
+		}
+		if (spec instanceof ChartSpec.Waffle waffle) {
+			return waffle(snapshot, waffle);
+		}
+		if (spec instanceof ChartSpec.Treemap treemap) {
+			return treemap(snapshot, treemap);
+		}
+		if (spec instanceof ChartSpec.Line line) {
+			return line(snapshot, line);
+		}
+		if (spec instanceof ChartSpec.Histogram histogram) {
+			return histogram(snapshot, histogram);
+		}
+		if (spec instanceof ChartSpec.Density density) {
+			return density(snapshot, density);
+		}
+		if (spec instanceof ChartSpec.Scatter scatter) {
+			return scatter(snapshot, scatter);
+		}
+		if (spec instanceof ChartSpec.Box box) {
+			return box(snapshot, box);
+		}
+		throw new AssertionError("Unknown chart spec: " + spec.getClass().getName());
 	}
 
 	// ---- bar -----------------------------------------------------------------------------------------

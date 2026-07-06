@@ -80,6 +80,11 @@ public final class DoughnutRenderer implements MarkRenderer {
 	}
 
 	@Override
+	public RevealStyle revealStyle() {
+		return RevealStyle.SWEEP;
+	}
+
+	@Override
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		Layout layout = layout(ctx);
 		g.setStroke(new BasicStroke(ChartStyle.px(2)));

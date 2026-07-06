@@ -47,6 +47,11 @@ public final class HistogramRenderer implements MarkRenderer {
 	}
 
 	@Override
+	public RevealStyle revealStyle() {
+		return RevealStyle.GROW_UP;
+	}
+
+	@Override
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		for (Bin bin : bins(ctx)) {
 			g.setColor(ChartInk.distributionFill(ctx.theme()));

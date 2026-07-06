@@ -39,6 +39,11 @@ public final class DensityRenderer implements MarkRenderer {
 	}
 
 	@Override
+	public RevealStyle revealStyle() {
+		return RevealStyle.WIPE_RIGHT;
+	}
+
+	@Override
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		if (data.gridX().length == 0) {
 			return;

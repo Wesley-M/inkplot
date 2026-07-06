@@ -67,6 +67,11 @@ public final class HBarRenderer implements MarkRenderer {
 	}
 
 	@Override
+	public RevealStyle revealStyle() {
+		return RevealStyle.WIPE_RIGHT;
+	}
+
+	@Override
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		double radius = ChartStyle.px(4);
 		double baseline = baselineX(ctx);

@@ -49,6 +49,11 @@ public interface MarkRenderer {
 	/** Paints the marks inside {@code ctx.plot()} using its scales; the canvas has already drawn the axes/grid. */
 	void paintMarks(Graphics2D g, PlotContext ctx);
 
+	/** How the marks reveal during the live component's entry animation (exports are always drawn fully). */
+	default RevealStyle revealStyle() {
+		return RevealStyle.FADE;
+	}
+
 	/** Legend entries in series order, or empty for a single-series chart (whose title already names it). */
 	List<LegendEntry> legend(ChartTheme theme);
 

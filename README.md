@@ -36,7 +36,8 @@ panel.add(Charts.bar("Mon", "Tue", "Wed", "Thu", "Fri")
 
 <img src="docs/readme-quickstart.svg" width="760" alt="Grouped bar chart: cups sold per weekday">
 
-`component()` returns a live `JComponent`: hover tooltips, wheel zoom about the cursor, drag-to-pan, a
+`component()` returns a live `JComponent`: an entry animation the first time it appears (bars grow up,
+lines draw on, the doughnut sweeps in), hover tooltips, wheel zoom about the cursor, drag-to-pan, a
 brush X-zoom on continuous axes, double-click to reset — all on by default. Swap `component()` for
 `image(width, height)` (raster) or `toSvg(width, height)` (crisp vector) to render headless — reports,
 tests, CI, or the images on this page.

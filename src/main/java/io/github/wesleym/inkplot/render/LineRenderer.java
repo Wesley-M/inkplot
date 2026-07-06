@@ -79,6 +79,11 @@ public final class LineRenderer implements MarkRenderer {
 	}
 
 	@Override
+	public RevealStyle revealStyle() {
+		return RevealStyle.WIPE_RIGHT;
+	}
+
+	@Override
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		g.setStroke(new BasicStroke(Math.max(1, ChartStyle.px(2)), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		boolean single = data.series().length == 1;

@@ -19,6 +19,8 @@ import io.github.wesleym.inkplot.scale.Scale;
 
 import javax.swing.JComponent;
 
+import java.awt.AlphaComposite;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -27,8 +29,10 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Arc2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -90,6 +94,16 @@ public final class ChartCanvas extends JComponent {
 
 	private BufferedImage baseLayer;
 	private boolean baseDirty = true;
+
+	// Entry animation: on first appearance the marks reveal (type-appropriate) over a short beat, re-baking
+	// the base image each frame. It plays once per canvas, never on later data updates (so a streaming feed
+	// doesn't re-animate), and never in exports — renderTo/image/toSvg always draw the full chart.
+	private static final int INTRO_MS = 560;
+	private final javax.swing.Timer introTimer;
+	private double introT;            // 0..1 linear progress
+	private double introReveal = 1.0; // eased reveal the base bake uses (1.0 = full)
+	private boolean introPending;
+	private boolean introPlayed;
 	private BufferedImage viewLayer;   // the settled camera view, baked crisp at device resolution
 	private boolean viewDirty = true;
 
@@ -98,6 +112,7 @@ public final class ChartCanvas extends JComponent {
 		setOpaque(true);
 		viewSettle = new javax.swing.Timer(VIEW_SETTLE_MS, e -> settleView());
 		viewSettle.setRepeats(false);
+		introTimer = new javax.swing.Timer(16, e -> stepIntro());
 		MouseAdapter tracker = new MouseAdapter() {
 			@Override
 			public void mouseMoved(MouseEvent e) {
@@ -256,6 +271,9 @@ public final class ChartCanvas extends JComponent {
 		}
 		this.xZoom = null;   // a new dataset means a new domain — never inherit the old brush
 		fitView();           // …nor the old viewport magnification
+		if (renderer != null && !introPlayed) {
+			introPending = true;   // play the entry animation once, on first appearance
+		}
 		invalidateBase();
 	}
 
@@ -387,6 +405,26 @@ public final class ChartCanvas extends JComponent {
 		repaint();
 	}
 
+	// One frame of the entry animation: advance the eased reveal and re-bake the base at it. Ends at full.
+	private void stepIntro() {
+		introT = Math.min(1.0, introT + 16.0 / INTRO_MS);
+		double t = introT;
+		introReveal = 1 - (1 - t) * (1 - t) * (1 - t);   // easeOutCubic — quick then gentle
+		baseDirty = true;
+		repaint();
+		if (introT >= 1.0) {
+			introReveal = 1.0;
+			introPlayed = true;
+			introTimer.stop();
+		}
+	}
+
+	@Override
+	public void removeNotify() {
+		introTimer.stop();
+		super.removeNotify();
+	}
+
 	@Override
 	public Dimension getPreferredSize() {
 		// Honour an explicit setPreferredSize (e.g. a small chart embedded in a host panel); otherwise a
@@ -401,11 +439,18 @@ public final class ChartCanvas extends JComponent {
 		if (w <= 0 || h <= 0) {
 			return;
 		}
+		if (introPending && renderer != null) {   // first valid paint with data — kick off the entry animation
+			introPending = false;
+			introT = 0;
+			introReveal = 0;
+			baseDirty = true;
+			introTimer.restart();
+		}
 		if (baseDirty || baseLayer == null || baseLayer.getWidth() != w || baseLayer.getHeight() != h) {
 			baseLayer = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D bg = baseLayer.createGraphics();
 			applyHints(bg);
-			renderTo(bg, w, h);
+			paintChart(bg, w, h, introReveal);   // reveal < 1 only mid-entry-animation
 			bg.dispose();
 			baseDirty = false;
 			viewDirty = true;
@@ -539,6 +584,18 @@ public final class ChartCanvas extends JComponent {
 	 * gridlines, marks, axes, and the legend.
 	 */
 	public void renderTo(Graphics2D g, int w, int h) {
+		paintChart(g, w, h, 1.0);   // exports and the settled view always draw the full chart
+	}
+
+	// Renders one entry-animation frame at {@code reveal} — for tests of the reveal geometry (package-private,
+	// never public API).
+	void renderRevealFrame(Graphics2D g, int w, int h, double reveal) {
+		paintChart(g, w, h, reveal);
+	}
+
+	// The chart at a given entry-reveal fraction (1.0 = full). Only the live base bake passes < 1 mid-animation;
+	// axes, gridlines, labels and the legend always draw fully — just the marks reveal.
+	private void paintChart(Graphics2D g, int w, int h, double reveal) {
 		g.setColor(theme.surface());
 		g.fillRect(0, 0, w, h);
 		if (renderer == null) {
@@ -588,7 +645,7 @@ public final class ChartCanvas extends JComponent {
 			}
 			PlotContext ctx = new PlotContext(plot, null, null, theme, hover);
 			this.lastContext = ctx;
-			renderer.paintMarks(g, ctx);
+			paintMarksRevealed(g, ctx, reveal, false);
 			if (!legend.isEmpty()) {
 				drawLegend(g, fm, legend, outer, legendAvail, legendBaseline, legendBelow);
 			}
@@ -637,10 +694,7 @@ public final class ChartCanvas extends JComponent {
 		}
 		// Clip marks to the plot so nothing spills into the axis gutters — e.g. a log-axis zero bar (whose value
 		// clamps to a pixel below the baseline) or an out-of-domain point.
-		java.awt.Shape savedClip = g.getClip();
-		g.clipRect(plot.x, plot.y, plot.width, plot.height);
-		renderer.paintMarks(g, ctx);
-		g.setClip(savedClip);
+		paintMarksRevealed(g, ctx, reveal, true);
 		if (xb.scale() instanceof Scale.Band band) {
 			AxisRenderer.axisXBand(g, theme, plot, band, band(xm));
 		}
@@ -651,6 +705,36 @@ public final class ChartCanvas extends JComponent {
 			drawLegend(g, fm, legend, outer, legendAvail, legendBaseline, legendBelow);
 		}
 		drawNotes(g, outer, legendAvail, notesBaseline);
+	}
+
+	// Draws the marks, clipped to the plot (for axis charts) and, mid entry-animation, to a type-appropriate
+	// reveal — bars grow up, lines/scatter wipe in, the doughnut sweeps, others fade. Restores clip + composite.
+	private void paintMarksRevealed(Graphics2D g, PlotContext ctx, double reveal, boolean plotClip) {
+		Rectangle plot = ctx.plot();
+		Shape savedClip = g.getClip();
+		Composite savedComposite = g.getComposite();
+		if (plotClip) {
+			g.clipRect(plot.x, plot.y, plot.width, plot.height);
+		}
+		if (reveal < 0.999) {
+			switch (renderer.revealStyle()) {
+				case GROW_UP -> {
+					int shown = (int) Math.ceil(reveal * plot.height);
+					g.clip(new Rectangle(plot.x, plot.y + plot.height - shown, plot.width, shown));
+				}
+				case WIPE_RIGHT -> g.clip(new Rectangle(plot.x, plot.y,
+						(int) Math.ceil(reveal * plot.width), plot.height));
+				case SWEEP -> {
+					double r = Math.hypot(plot.width, plot.height);
+					g.clip(new Arc2D.Double(plot.getCenterX() - r, plot.getCenterY() - r, 2 * r, 2 * r,
+							90, -reveal * 360, Arc2D.PIE));
+				}
+				case FADE -> g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) reveal));
+			}
+		}
+		renderer.paintMarks(g, ctx);
+		g.setClip(savedClip);
+		g.setComposite(savedComposite);
 	}
 
 	// Figure notes in the book style: centred, muted, italic caption lines at the chart's bottom edge.

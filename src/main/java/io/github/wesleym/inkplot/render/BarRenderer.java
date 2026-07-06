@@ -73,6 +73,11 @@ public final class BarRenderer implements MarkRenderer {
 	}
 
 	@Override
+	public RevealStyle revealStyle() {
+		return RevealStyle.GROW_UP;
+	}
+
+	@Override
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		double radius = ChartStyle.px(4);
 		double baseline = baselineY(ctx);

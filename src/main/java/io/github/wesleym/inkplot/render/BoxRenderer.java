@@ -62,6 +62,11 @@ public final class BoxRenderer implements MarkRenderer {
 	}
 
 	@Override
+	public RevealStyle revealStyle() {
+		return RevealStyle.GROW_UP;
+	}
+
+	@Override
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		Scale.Band band = (Scale.Band) ctx.xScale();
 		double boxW = Math.min(ChartStyle.px(MAX_BOX_WIDTH), band.bandWidth());

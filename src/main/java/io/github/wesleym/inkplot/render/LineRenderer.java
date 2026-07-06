@@ -87,11 +87,14 @@ public final class LineRenderer implements MarkRenderer {
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		g.setStroke(new BasicStroke(Math.max(1, ChartStyle.px(2)), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		boolean single = data.series().length == 1;
+		SeriesEmphasis em = ctx.emphasis();
+		java.awt.Composite base = g.getComposite();
 		for (int s = 0; s < data.series().length; s++) {
 			ChartData.Line.Series series = data.series()[s];
-			if (series.x().length == 0) {
+			if (series.x().length == 0 || em.isHidden(s)) {
 				continue;
 			}
+			g.setComposite(em.composite(s, base));
 			Color colour = ChartInk.series(ctx.theme(), s);
 			int[] keep = Downsample.lttb(series.x(), series.y(), Math.max(8, ctx.plot().width));
 			Path2D line = new Path2D.Double();
@@ -112,6 +115,12 @@ public final class LineRenderer implements MarkRenderer {
 			g.draw(line);
 			paintEndMarker(g, ctx, series, colour);
 		}
+		g.setComposite(base);
+	}
+
+	@Override
+	public boolean interactiveSeries() {
+		return data.series().length > 1;
 	}
 
 	@Override

@@ -81,10 +81,22 @@ public final class BarRenderer implements MarkRenderer {
 	public void paintMarks(Graphics2D g, PlotContext ctx) {
 		double radius = ChartStyle.px(4);
 		double baseline = baselineY(ctx);
+		SeriesEmphasis em = ctx.emphasis();
+		java.awt.Composite base = g.getComposite();
 		for (BarRect bar : rects(ctx)) {
+			if (em.isHidden(bar.series())) {
+				continue;
+			}
+			g.setComposite(em.composite(bar.series(), base));
 			g.setColor(fillFor(ctx.theme(), bar.series(), bar.category()));
 			g.fill(barShape(bar, radius, baseline));
 		}
+		g.setComposite(base);
+	}
+
+	@Override
+	public boolean interactiveSeries() {
+		return data.seriesCount() > 1;
 	}
 
 	@Override

@@ -54,6 +54,15 @@ public interface MarkRenderer {
 		return RevealStyle.FADE;
 	}
 
+	/**
+	 * Whether this chart's legend entries map one-to-one to series that can be toggled and focused on the live
+	 * component (multi-series bar, line, scatter). The renderer must honour {@code ctx.emphasis()} in
+	 * {@link #paintMarks}. Charts whose legend names categories, not series (doughnut), return false.
+	 */
+	default boolean interactiveSeries() {
+		return false;
+	}
+
 	/** Legend entries in series order, or empty for a single-series chart (whose title already names it). */
 	List<LegendEntry> legend(ChartTheme theme);
 

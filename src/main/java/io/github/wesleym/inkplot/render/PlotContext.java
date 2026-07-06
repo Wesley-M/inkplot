@@ -10,9 +10,15 @@ import java.awt.Rectangle;
  * scales the canvas derived from the renderer's axis models (null for a radial renderer, which has no axes), the live
  * theme, and the current hover state. Immutable — the canvas rebuilds it whenever the size, data, or theme changes.
  */
-public record PlotContext(Rectangle plot, Scale xScale, Scale yScale, ChartTheme theme, ChartHoverState hover) {
+public record PlotContext(Rectangle plot, Scale xScale, Scale yScale, ChartTheme theme, ChartHoverState hover,
+		SeriesEmphasis emphasis) {
+
+	/** Legend emphasis defaults to none — the common case and every export. */
+	public PlotContext(Rectangle plot, Scale xScale, Scale yScale, ChartTheme theme, ChartHoverState hover) {
+		this(plot, xScale, yScale, theme, hover, SeriesEmphasis.NONE);
+	}
 
 	public PlotContext withHover(ChartHoverState next) {
-		return new PlotContext(plot, xScale, yScale, theme, next);
+		return new PlotContext(plot, xScale, yScale, theme, next, emphasis);
 	}
 }

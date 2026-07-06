@@ -11,6 +11,7 @@ import io.github.wesleym.inkplot.render.MarkHit;
 import io.github.wesleym.inkplot.render.MarkRenderer;
 import io.github.wesleym.inkplot.render.PlotContext;
 import io.github.wesleym.inkplot.render.Renderers;
+import io.github.wesleym.inkplot.render.SeriesEmphasis;
 import io.github.wesleym.inkplot.render.XAxisModel;
 import io.github.wesleym.inkplot.render.YAxisModel;
 import io.github.wesleym.inkplot.scale.LogTicks;
@@ -104,6 +105,15 @@ public final class ChartCanvas extends JComponent {
 	private double introReveal = 1.0; // eased reveal the base bake uses (1.0 = full)
 	private boolean introPending;
 	private boolean introPlayed;
+
+	// Interactive legend, multi-series charts only: click an entry to toggle its series off/on, hover to focus
+	// it and dim the rest. State lives here and feeds the renderer through the plot context; exports never see
+	// it. The hit rects are captured (in base coordinates) each time the base image is baked.
+	private boolean[] hidden = new boolean[0];
+	private int focusSeries = -1;
+	private final List<Rectangle> legendHitRects = new ArrayList<>();
+	private final List<Integer> legendHitSeries = new ArrayList<>();
+	private boolean capturingLegendHits;
 	private BufferedImage viewLayer;   // the settled camera view, baked crisp at device resolution
 	private boolean viewDirty = true;
 
@@ -117,17 +127,32 @@ public final class ChartCanvas extends JComponent {
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				Point p = toBase(e.getPoint());
+				int s = legendSeriesAt(p);
+				if (s >= 0) {
+					setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+					setFocus(s);
+					setHover(ChartHoverState.NONE);   // no data tooltip while pointing at the legend
+					return;
+				}
+				setCursor(java.awt.Cursor.getDefaultCursor());
+				setFocus(-1);
 				setHover(ChartHoverState.at(p.x, p.y));
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
+				setFocus(-1);
 				setHover(ChartHoverState.NONE);
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (!javax.swing.SwingUtilities.isLeftMouseButton(e)) {
+					return;
+				}
+				int series = legendSeriesAt(toBase(e.getPoint()));
+				if (series >= 0) {
+					toggleSeries(series);   // click a legend entry to toggle its series
 					return;
 				}
 				// Once zoomed in, left-drag pans; at fit it starts the X-brush (data zoom) on brushable charts.
@@ -270,6 +295,8 @@ public final class ChartCanvas extends JComponent {
 			this.renderer.setPreferLegend(legendPlacement == LegendPlacement.BOTTOM);
 		}
 		this.xZoom = null;   // a new dataset means a new domain — never inherit the old brush
+		this.hidden = new boolean[renderer == null ? 0 : renderer.legend(theme).size()];   // reset toggles
+		this.focusSeries = -1;
 		fitView();           // …nor the old viewport magnification
 		if (renderer != null && !introPlayed) {
 			introPending = true;   // play the entry animation once, on first appearance
@@ -405,6 +432,55 @@ public final class ChartCanvas extends JComponent {
 		repaint();
 	}
 
+	private SeriesEmphasis emphasis() {
+		return focusSeries < 0 && !anyHidden() ? SeriesEmphasis.NONE : new SeriesEmphasis(hidden, focusSeries);
+	}
+
+	// The series index of the legend entry under a base-space point, or -1.
+	private int legendSeriesAt(Point base) {
+		for (int i = 0; i < legendHitRects.size(); i++) {
+			if (legendHitRects.get(i).contains(base)) {
+				return legendHitSeries.get(i);
+			}
+		}
+		return -1;
+	}
+
+	private void toggleSeries(int s) {
+		if (s < 0 || s >= hidden.length) {
+			return;
+		}
+		if (!hidden[s]) {   // never hide the last visible series
+			int visible = 0;
+			for (boolean b : hidden) {
+				if (!b) {
+					visible++;
+				}
+			}
+			if (visible <= 1) {
+				return;
+			}
+		}
+		hidden[s] = !hidden[s];
+		invalidateBase();
+	}
+
+	private void setFocus(int s) {
+		if (focusSeries != s) {
+			focusSeries = s;
+			invalidateBase();
+		}
+	}
+
+	private boolean anyHidden() {
+		for (boolean b : hidden) {
+			if (b) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// One frame of the entry animation: advance the eased reveal and re-bake the base at it. Ends at full.
 	private void stepIntro() {
 		introT = Math.min(1.0, introT + 16.0 / INTRO_MS);
@@ -450,7 +526,9 @@ public final class ChartCanvas extends JComponent {
 			baseLayer = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D bg = baseLayer.createGraphics();
 			applyHints(bg);
+			capturingLegendHits = true;          // capture legend hit rects from this on-screen bake only
 			paintChart(bg, w, h, introReveal);   // reveal < 1 only mid-entry-animation
+			capturingLegendHits = false;
 			bg.dispose();
 			baseDirty = false;
 			viewDirty = true;
@@ -593,6 +671,15 @@ public final class ChartCanvas extends JComponent {
 		paintChart(g, w, h, reveal);
 	}
 
+	// Legend-interaction hooks for tests (package-private, never public API).
+	void toggleSeriesForTest(int s) {
+		toggleSeries(s);
+	}
+
+	void focusSeriesForTest(int s) {
+		focusSeries = s;
+	}
+
 	// The chart at a given entry-reveal fraction (1.0 = full). Only the live base bake passes < 1 mid-animation;
 	// axes, gridlines, labels and the legend always draw fully — just the marks reveal.
 	private void paintChart(Graphics2D g, int w, int h, double reveal) {
@@ -643,7 +730,7 @@ public final class ChartCanvas extends JComponent {
 				this.lastContext = null;
 				return;
 			}
-			PlotContext ctx = new PlotContext(plot, null, null, theme, hover);
+			PlotContext ctx = new PlotContext(plot, null, null, theme, hover, emphasis());
 			this.lastContext = ctx;
 			paintMarksRevealed(g, ctx, reveal, false);
 			if (!legend.isEmpty()) {
@@ -683,7 +770,7 @@ public final class ChartCanvas extends JComponent {
 				: new Scale.Linear(yticks.domainMin(), yticks.domainMax(), plot.y + plot.height, plot.y);
 
 		XBuild xb = buildX(xm, plot);
-		PlotContext ctx = new PlotContext(plot, xb.scale(), yScale, theme, hover);
+		PlotContext ctx = new PlotContext(plot, xb.scale(), yScale, theme, hover, emphasis());
 		this.lastContext = ctx;
 
 		if (yBands != null) {
@@ -915,6 +1002,12 @@ public final class ChartCanvas extends JComponent {
 		}
 		rows.add(row);
 
+		boolean interactive = renderer != null && renderer.interactiveSeries();
+		if (capturingLegendHits) {
+			legendHitRects.clear();
+			legendHitSeries.clear();
+		}
+		int series = 0;   // real (keyed) entries are in series order; the "+ N more" tail carries no key
 		int y = firstBaseline;
 		for (List<LegendEntry> line : rows) {
 			int lineW = -itemGap;   // the trailing gap doesn't count against centring
@@ -930,17 +1023,27 @@ public final class ChartCanvas extends JComponent {
 					x += swatch + gap + fm.stringWidth(e.label()) + itemGap;
 					continue;
 				}
+				int labelW = fm.stringWidth(e.label());
+				boolean off = interactive && series < hidden.length && hidden[series];
 				int mid = y - fm.getAscent() / 2 + 1;
-				g.setColor(e.color());
+				g.setColor(off ? theme.muted() : e.color());
 				if (e.line()) {
 					g.fillRect(x, mid - ChartStyle.px(1), swatch, Math.max(1, ChartStyle.px(2)));
 				}
 				else {
 					g.fill(new Rectangle2D.Double(x, mid - swatch / 2.0, swatch, swatch));
 				}
-				g.setColor(theme.text());
+				g.setColor(off ? theme.muted() : theme.text());
 				g.drawString(e.label(), x + swatch + gap, y);
-				x += swatch + gap + fm.stringWidth(e.label()) + itemGap;
+				if (off) {   // a strike through the toggled-off entry
+					g.drawLine(x + swatch + gap, mid, x + swatch + gap + labelW, mid);
+				}
+				if (interactive && capturingLegendHits) {
+					legendHitRects.add(new Rectangle(x, y - fm.getAscent(), swatch + gap + labelW, fm.getHeight()));
+					legendHitSeries.add(series);
+				}
+				series++;
+				x += swatch + gap + labelW + itemGap;
 			}
 			y += lineH;
 		}

@@ -76,19 +76,30 @@ public final class ScatterRenderer implements MarkRenderer {
 			density[rw * cols + c]++;
 		}
 
+		SeriesEmphasis em = ctx.emphasis();
 		for (int i = 0; i < n; i++) {
+			int s = seriesOf(i);
+			if (em.isHidden(s)) {
+				continue;
+			}
+			double dim = em.dim(s);
 			int c = clamp((int) ((px[i] - ctx.plot().x) / cell), cols);
 			int rw = clamp((int) ((py[i] - ctx.plot().y) / cell), rows);
 			int crowd = density[rw * cols + c];
-			double opacity = Math.max(0.15, Math.min(0.85, 0.9 / (1 + Math.log(crowd) / Math.log(2))));
-			Color colour = ChartInk.series(ctx.theme(), seriesOf(i));
-			if (crowd <= 3) {
+			double opacity = Math.max(0.15, Math.min(0.85, 0.9 / (1 + Math.log(crowd) / Math.log(2)))) * dim;
+			Color colour = ChartInk.series(ctx.theme(), s);
+			if (crowd <= 3 && dim == 1.0) {
 				g.setColor(ChartInk.separator(ctx.theme()));
 				g.fill(new Ellipse2D.Double(px[i] - r - ring, py[i] - r - ring, (r + ring) * 2, (r + ring) * 2));
 			}
 			g.setColor(ChartInk.alpha(colour, opacity));
 			g.fill(new Ellipse2D.Double(px[i] - r, py[i] - r, r * 2, r * 2));
 		}
+	}
+
+	@Override
+	public boolean interactiveSeries() {
+		return data.seriesCount() > 1;
 	}
 
 	@Override

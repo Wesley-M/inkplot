@@ -71,6 +71,7 @@ public final class ChartCanvas extends JComponent {
 	private LabelMode labelMode = LabelMode.AUTO;
 	private double[] yBounds;   // manual value-axis [min,max] override, or null for auto "nice" bounds
 	private LegendPlacement legendPlacement = LegendPlacement.TOP;
+	private boolean legendVisible = true;
 	private List<String> notes = List.of();
 	private String title;      // optional headline drawn into the surface (and so into every export)
 	private String subtitle;   // muted context beside it, e.g. the rows covered
@@ -349,6 +350,15 @@ public final class ChartCanvas extends JComponent {
 			if (renderer != null) {
 				renderer.setPreferLegend(placement == LegendPlacement.BOTTOM);
 			}
+			invalidateBase();
+			repaint();
+		}
+	}
+
+	/** Whether the series legend is shown. Hiding it reclaims that space for the plot (useful on a small tile). */
+	public void setLegendVisible(boolean visible) {
+		if (this.legendVisible != visible) {
+			this.legendVisible = visible;
 			invalidateBase();
 			repaint();
 		}
@@ -812,7 +822,7 @@ public final class ChartCanvas extends JComponent {
 		g.setFont(caption);
 		FontMetrics fm = g.getFontMetrics();
 
-		List<LegendEntry> legend = renderer.legend(theme);
+		List<LegendEntry> legend = legendVisible ? renderer.legend(theme) : List.of();
 		int legendAvail = w - 2 * outer;
 		int legendRows = legend.isEmpty() ? 0 : legendRows(fm, legend, legendAvail);
 		// The legend may claim at most a third of the surface: past that, entries fold into a "+ N more"

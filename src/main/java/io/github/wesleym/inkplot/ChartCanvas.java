@@ -92,6 +92,7 @@ public final class ChartCanvas extends JComponent {
 	private final ChartViewport viewport = new ChartViewport();
 	private final javax.swing.Timer viewSettle;
 	private boolean gestureActive;
+	private boolean wheelZoom = true;   // when false, the wheel is left for an enclosing scroll pane (embedded charts)
 	private int panAnchorX = -1;   // pan-drag anchor in screen px while panning (-1 = not panning)
 	private int panAnchorY;
 
@@ -225,11 +226,29 @@ public final class ChartCanvas extends JComponent {
 		addMouseMotionListener(tracker);
 		addMouseListener(tracker);
 		addMouseWheelListener(e -> {
+			if (!wheelZoom) {
+				// Hand the wheel to the enclosing scroll pane so an embedded chart doesn't trap the page scroll.
+				// The parent has no wheel listener, so dispatching there lets Swing retarget up to the scroll pane.
+				java.awt.Container parent = getParent();
+				if (parent != null) {
+					parent.dispatchEvent(javax.swing.SwingUtilities.convertMouseEvent(this, e, parent));
+				}
+				return;
+			}
 			double rotation = e.getPreciseWheelRotation();
 			if (rotation != 0) {
 				zoomAt(e.getX(), e.getY(), Math.pow(VIEW_ZOOM_STEP, -rotation));
 			}
 		});
+	}
+
+	/**
+	 * Whether the mouse wheel zooms the viewport. Enabled by default (a standalone/fullscreen chart). Disable it
+	 * for a chart embedded in a scrolling container (e.g. a dashboard tile), so the wheel scrolls the page instead
+	 * of being trapped as a zoom; the zoom pill buttons still work.
+	 */
+	public void setWheelZoomEnabled(boolean enabled) {
+		this.wheelZoom = enabled;
 	}
 
 	// A screen point mapped back into base-image (unzoomed) coordinates. All hover/brush/hit-testing runs in

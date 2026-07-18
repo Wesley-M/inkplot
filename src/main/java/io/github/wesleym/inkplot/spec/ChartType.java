@@ -8,6 +8,7 @@ package io.github.wesleym.inkplot.spec;
  */
 public enum ChartType {
 
+	STAT("Stat", Group.SUMMARY, "A single headline number, big and clear"),
 	BAR("Bar", Group.COMPARE, "Compare totals across categories"),
 	DOUGHNUT("Doughnut", Group.SHARE, "Shares of a whole, up to ten slices"),
 	WAFFLE("Waffle", Group.SHARE, "Shares of a whole on a unit grid"),
@@ -21,6 +22,7 @@ public enum ChartType {
 	/** The question a chart answers — the picker menu's section headings. */
 	public enum Group {
 
+		SUMMARY("Summary"),
 		COMPARE("Compare"),
 		SHARE("Share of a whole"),
 		TREND("Trend"),

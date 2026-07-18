@@ -20,6 +20,7 @@ public final class ChartSpecs {
 		List<Integer> temporal = columns.temporalColumns();
 		List<Integer> continuous = columns.continuousColumns();
 		return switch (type) {
+			case STAT -> new ChartSpec.Stat(null, Aggregate.COUNT);   // count rows — always valid
 			case BAR -> category.isEmpty() ? null
 					: new ChartSpec.Bar(category.get(0), firstOther(numeric, category.get(0)),
 							firstOther(numeric, category.get(0)) == null ? Aggregate.COUNT : Aggregate.SUM,

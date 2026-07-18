@@ -24,6 +24,9 @@ public final class ChartBuilder {
 
 	public static ChartData build(ChartSpec spec, Table snapshot, int plotWidth) {
 		java.util.Objects.requireNonNull(spec, "spec");
+		if (spec instanceof ChartSpec.Stat stat) {
+			return stat(snapshot, stat);
+		}
 		if (spec instanceof ChartSpec.Bar bar) {
 			return bar(snapshot, bar);
 		}
@@ -52,6 +55,36 @@ public final class ChartBuilder {
 			return box(snapshot, box);
 		}
 		throw new AssertionError("Unknown chart spec: " + spec.getClass().getName());
+	}
+
+	// ---- stat ----------------------------------------------------------------------------------------
+
+	// The whole result reduced to one number: COUNT (or a null value column) tallies rows; the rest reduce the
+	// chosen numeric column. A count reads as an integer; a sum/avg/min/max keeps grouped decimals.
+	private static ChartData.Stat stat(Table s, ChartSpec.Stat spec) {
+		Aggregate agg = spec.agg() == null ? Aggregate.COUNT : spec.agg();
+		if (agg == Aggregate.COUNT || spec.value() == null) {
+			int rows = s.rows().size();
+			return new ChartData.Stat(rows, "Count", true, Provenance.full(rows));
+		}
+		ChartExtract.Column col = ChartExtract.numeric(s.rows(), spec.value(), ChartLimits.MAX_VALUES_PER_COLUMN);
+		double[] v = col.values();
+		double sum = 0;
+		double min = Double.POSITIVE_INFINITY;
+		double max = Double.NEGATIVE_INFINITY;
+		for (double x : v) {
+			sum += x;
+			min = Math.min(min, x);
+			max = Math.max(max, x);
+		}
+		double value = finalizeAggregate(agg, sum, v.length, v.length == 0 ? 0 : min, v.length == 0 ? 0 : max);
+		String label = agg.label() + " of " + s.columnName(spec.value());
+		boolean integral = agg == Aggregate.MIN || agg == Aggregate.MAX ? isWhole(value) : false;
+		return new ChartData.Stat(value, label, integral, provenanceFor(s, col, null));
+	}
+
+	private static boolean isWhole(double value) {
+		return value == Math.rint(value) && !Double.isInfinite(value);
 	}
 
 	// ---- bar -----------------------------------------------------------------------------------------

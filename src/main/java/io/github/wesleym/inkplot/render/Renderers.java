@@ -12,6 +12,9 @@ public final class Renderers {
 
 	public static MarkRenderer of(ChartData data) {
 		java.util.Objects.requireNonNull(data, "data");
+		if (data instanceof ChartData.Stat stat) {
+			return new StatRenderer(stat);
+		}
 		if (data instanceof ChartData.Bar bar) {
 			return bar.horizontal() ? new HBarRenderer(bar) : new BarRenderer(bar);
 		}

@@ -120,8 +120,20 @@ public final class AxisRenderer {
 				break;
 			}
 		}
+		// When the labels rotate they can still pile up in a narrow plot; draw an evenly-spaced subset so the axis
+		// reads cleanly and let hover reveal every bar (the chart is interactive). Non-rotated labels already fit
+		// their slot, so nothing is dropped there. First bar is value-largest, so a stride from 0 keeps it labelled.
+		int stride = 1;
+		if (rotate) {
+			int minSpacing = ChartStyle.px(22);
+			int fit = Math.max(1, plot.width / minSpacing);
+			stride = Math.max(1, (int) Math.ceil(labels.length / (double) fit));
+		}
 		int top = plot.y + plot.height + ChartStyle.px(LABEL_GAP);
 		for (int i = 0; i < labels.length; i++) {
+			if (i % stride != 0) {
+				continue;
+			}
 			int cx = (int) Math.round(band.center(i));
 			if (rotate) {
 				String elided = elide(fm, labels[i], plot.height / 2 + ChartStyle.px(24));

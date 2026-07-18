@@ -15,8 +15,10 @@ final class ChartLimits {
 	/** Max scatter points actually rendered; beyond it a uniform-stride sample keeps the shape at bounded cost. */
 	public static final int MAX_SCATTER_POINTS = 20_000;
 
-	/** Max distinct categories on a bar/box axis; the overflow folds into a single "Other" bucket. */
-	public static final int MAX_CATEGORIES = 40;
+	/** Default distinct categories on a bar/box axis before the tail folds into "Other". Kept low because a bar
+	 *  chart stops being readable past a dozen-and-a-half bars — the wall of rotated labels people hit — and
+	 *  value-desc sort keeps the ones that matter. The overflow is one "Other" bucket, and the view says so. */
+	public static final int MAX_CATEGORIES = 16;
 
 	/** Default doughnut slices before the tail folds into "Other" — past this, slices stop being readable as
 	 *  shares. The picker's Slices knob overrides it per chart, ceilinged at {@link #MAX_SERIES}. */

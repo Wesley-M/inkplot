@@ -8,11 +8,21 @@ import java.awt.Color;
  * renderer consumes it. Every variant carries its {@link Provenance} so the view can state what it covers.
  */
 public sealed interface ChartData
-		permits ChartData.Bar, ChartData.Doughnut, ChartData.Waffle, ChartData.Treemap, ChartData.Line,
-		ChartData.Histogram,
+		permits ChartData.Stat, ChartData.Bar, ChartData.Doughnut, ChartData.Waffle, ChartData.Treemap,
+		ChartData.Line, ChartData.Histogram,
 		ChartData.Density, ChartData.Scatter, ChartData.Box {
 
 	Provenance provenance();
+
+	/**
+	 * A single reduced value for a big-number "stat" card.
+	 *
+	 * @param value      the reduced number
+	 * @param valueLabel what it measures ("Count", "Sum of price"), drawn under the number
+	 * @param integral   whether to show it with no decimals (a count) rather than grouped decimals
+	 * @param provenance what this chart covers of the source
+	 */
+	record Stat(double value, String valueLabel, boolean integral, Provenance provenance) implements ChartData { }
 
 	/**
 	 * Grouped or stacked bars. {@code values[s][c]} is series {@code s}'s value in category {@code c}; a single

@@ -6,10 +6,29 @@ package io.github.wesleym.inkplot.spec;
  * data refresh is just handing the same spec a new snapshot.
  */
 public sealed interface ChartSpec
-		permits ChartSpec.Bar, ChartSpec.Doughnut, ChartSpec.Waffle, ChartSpec.Treemap, ChartSpec.Line,
-		ChartSpec.Histogram, ChartSpec.Density, ChartSpec.Scatter, ChartSpec.Box {
+		permits ChartSpec.Stat, ChartSpec.Bar, ChartSpec.Doughnut, ChartSpec.Waffle, ChartSpec.Treemap,
+		ChartSpec.Line, ChartSpec.Histogram, ChartSpec.Density, ChartSpec.Scatter, ChartSpec.Box {
 
 	ChartType type();
+
+	/**
+	 * A single headline number — the whole result reduced to one value for a big-number "stat" card.
+	 *
+	 * @param value the numeric column to reduce, or null to count rows
+	 * @param agg   how to reduce it; COUNT ignores {@code value} and tallies rows
+	 */
+	record Stat(Integer value, Aggregate agg) implements ChartSpec {
+
+		/** Count the rows — the no-column stat. */
+		public Stat(Aggregate agg) {
+			this(null, agg);
+		}
+
+		@Override
+		public ChartType type() {
+			return ChartType.STAT;
+		}
+	}
 
 	/**
 	 * A category axis with an aggregated value; {@code y == null} means COUNT. Optionally split by a series

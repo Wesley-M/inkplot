@@ -68,6 +68,8 @@ public final class ChartCanvas extends JComponent {
 	private ChartTheme theme;
 	private MarkRenderer renderer;
 	private YScale yScaleMode = YScale.LINEAR;
+	private LabelMode labelMode = LabelMode.AUTO;
+	private double[] yBounds;   // manual value-axis [min,max] override, or null for auto "nice" bounds
 	private LegendPlacement legendPlacement = LegendPlacement.TOP;
 	private List<String> notes = List.of();
 	private String title;      // optional headline drawn into the surface (and so into every export)
@@ -407,6 +409,33 @@ public final class ChartCanvas extends JComponent {
 			this.yScaleMode = mode;
 			invalidateBase();
 		}
+	}
+
+	/** How much of the category axis to label (AUTO thins dense labels, ALL keeps every one, OFF hovers only). */
+	public void setLabelMode(LabelMode mode) {
+		LabelMode next = mode == null ? LabelMode.AUTO : mode;
+		if (this.labelMode != next) {
+			this.labelMode = next;
+			invalidateBase();
+		}
+	}
+
+	public LabelMode labelMode() {
+		return labelMode;
+	}
+
+	/** Pins the value axis to {@code [min, max]}; pass null/null to return to auto "nice" bounds. */
+	public void setYBounds(Double min, Double max) {
+		double[] next = min == null || max == null
+				? null : new double[] { Math.min(min, max), Math.max(min, max) };
+		if (!java.util.Arrays.equals(this.yBounds, next)) {
+			this.yBounds = next;
+			invalidateBase();
+		}
+	}
+
+	public boolean hasYBounds() {
+		return yBounds != null;
 	}
 
 	public YScale yScale() {
@@ -809,6 +838,11 @@ public final class ChartCanvas extends JComponent {
 
 		YAxisModel ym = renderer.yModel();
 		String[] yBands = renderer.yBands();
+		if (yBounds != null && yBands == null) {
+			// Manual value-axis bounds: override the domain the ticks + scale (and so the marks) derive from.
+			ym = YAxisModel.loggable(yBounds[0], yBounds[1], ym.allowLog() && yBounds[0] > 0,
+					yBounds[0] > 0 ? yBounds[0] : ym.positiveMin());
+		}
 		boolean log = yBands == null && yScaleMode == YScale.LOG && ym.allowLog();
 		YTicks yticks = yBands == null ? yTicks(ym, log, Math.max(2, h / ChartStyle.px(44))) : null;
 		// A band Y (horizontal bars) sizes its gutter from the real category names — the point of the orientation —
@@ -841,7 +875,7 @@ public final class ChartCanvas extends JComponent {
 		this.lastContext = ctx;
 
 		if (yBands != null) {
-			AxisRenderer.axisYBand(g, theme, plot, (Scale.Band) yScale, yBands, maxYLabel);
+			AxisRenderer.axisYBand(g, theme, plot, (Scale.Band) yScale, yBands, maxYLabel, labelMode);
 		}
 		else {
 			AxisRenderer.gridlinesY(g, theme, plot, yScale, yticks.values(), yticks.labels());
@@ -850,7 +884,7 @@ public final class ChartCanvas extends JComponent {
 		// clamps to a pixel below the baseline) or an out-of-domain point.
 		paintMarksRevealed(g, ctx, reveal, true);
 		if (xb.scale() instanceof Scale.Band band) {
-			AxisRenderer.axisXBand(g, theme, plot, band, band(xm));
+			AxisRenderer.axisXBand(g, theme, plot, band, band(xm), labelMode);
 		}
 		else {
 			AxisRenderer.axisXContinuous(g, theme, plot, xb.tickPixels(), xb.tickLabels());

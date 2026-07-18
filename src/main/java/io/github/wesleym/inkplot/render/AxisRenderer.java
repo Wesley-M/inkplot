@@ -93,7 +93,10 @@ public final class AxisRenderer {
 
 	/** Category labels right-aligned in the left gutter, one per band — the Y axis of a horizontal bar chart. */
 	public static void axisYBand(Graphics2D g, ChartTheme theme, Rectangle plot, Scale.Band band, String[] labels,
-			int gutterWidth) {
+			int gutterWidth, io.github.wesleym.inkplot.LabelMode mode) {
+		if (mode == io.github.wesleym.inkplot.LabelMode.OFF) {
+			return;   // labels are on hover only
+		}
 		Font font = ChartStyle.caption();
 		g.setFont(font);
 		FontMetrics fm = g.getFontMetrics();
@@ -107,7 +110,11 @@ public final class AxisRenderer {
 	}
 
 	/** Category labels centred under each band; elided to fit, then rotated when even that would overlap. */
-	public static void axisXBand(Graphics2D g, ChartTheme theme, Rectangle plot, Scale.Band band, String[] labels) {
+	public static void axisXBand(Graphics2D g, ChartTheme theme, Rectangle plot, Scale.Band band, String[] labels,
+			io.github.wesleym.inkplot.LabelMode mode) {
+		if (mode == io.github.wesleym.inkplot.LabelMode.OFF) {
+			return;   // labels are on hover only
+		}
 		Font font = ChartStyle.caption();
 		g.setFont(font);
 		FontMetrics fm = g.getFontMetrics();
@@ -120,11 +127,12 @@ public final class AxisRenderer {
 				break;
 			}
 		}
-		// When the labels rotate they can still pile up in a narrow plot; draw an evenly-spaced subset so the axis
-		// reads cleanly and let hover reveal every bar (the chart is interactive). Non-rotated labels already fit
-		// their slot, so nothing is dropped there. First bar is value-largest, so a stride from 0 keeps it labelled.
+		// When the labels rotate they can still pile up in a narrow plot; AUTO draws an evenly-spaced subset so the
+		// axis reads cleanly and lets hover reveal every bar (the chart is interactive). ALL keeps every label even
+		// when cramped. Non-rotated labels already fit their slot, so nothing is dropped there. First bar is
+		// value-largest, so a stride from 0 keeps it labelled.
 		int stride = 1;
-		if (rotate) {
+		if (rotate && mode == io.github.wesleym.inkplot.LabelMode.AUTO) {
 			int minSpacing = ChartStyle.px(22);
 			int fit = Math.max(1, plot.width / minSpacing);
 			stride = Math.max(1, (int) Math.ceil(labels.length / (double) fit));

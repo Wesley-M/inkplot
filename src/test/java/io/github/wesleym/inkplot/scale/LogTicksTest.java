@@ -15,6 +15,21 @@ class LogTicksTest {
 	}
 
 	@Test
+	void subDecadeRangeStaysWithinOneDecade() {
+		// A real sub-decade span must NOT balloon to two decades (which strands the data in the bottom third).
+		LogTicks.Result r = LogTicks.of(20, 90);
+		assertEquals(10.0, r.niceMin(), 1e-9, "min rounds down to 10");
+		assertEquals(100.0, r.niceMax(), 1e-9, "max stays within the same decade (100), not 1000");
+	}
+
+	@Test
+	void degenerateSingleValueStillGetsASpan() {
+		LogTicks.Result r = LogTicks.of(50, 50);
+		assertTrue(r.niceMax() > r.niceMin(), "a single value still yields a positive-span axis");
+		assertTrue(r.values().length >= 2, "and multiple ticks");
+	}
+
+	@Test
 	void showsMinorMarksOverAShortRangeOnly() {
 		LogTicks.Result few = LogTicks.of(1, 100);
 		boolean hasTwo = false;

@@ -106,6 +106,65 @@ class ChartBuilderTest {
 	}
 
 	@Test
+	void barFoldKeepsTheBiggestCategoryEvenWhenItIsRare() {
+		// The reported bug: "Sum of count" where a category appears in ONE row with a huge value was folded into
+		// "Other" for being infrequent. 20 small categories (5 rows each) + one huge (a single row, value 1000):
+		// the fold must rank by VALUE, so "huge" survives and leads, never dropped into "Other".
+		List<List<String>> rows = new ArrayList<>();
+		rows.add(List.of("huge", "1000"));
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 5; j++) {
+				rows.add(List.of("small" + i, "1"));
+			}
+		}
+		Table s = snapshot(List.of("k", "v"), List.of("varchar", "int"), rows);
+		ChartData.Bar bar = (ChartData.Bar) ChartBuilder.build(
+				new ChartSpec.Bar(0, 1, Aggregate.SUM, null, false, CategoryOrder.VALUE_DESC), s, 4000);
+		assertTrue(List.of(bar.categories()).contains("huge"), "the rare-but-biggest category must survive the fold");
+		assertEquals("huge", bar.categories()[0], "and rank first under largest-first");
+		assertEquals(1000.0, bar.values()[0][0], 1e-9);
+	}
+
+	@Test
+	void barOtherBucketAveragesFoldedRowsNotPerCategoryAverages() {
+		// AVG over "Other" must average the FOLDED ROWS, not the folded categories' averages. 15 big categories are
+		// kept; "lowA"=[2,4] and "lowB"=[6] fold — Other = avg{2,4,6} = 4, not avg{avg(2,4)=3, avg(6)=6} = 4.5.
+		List<List<String>> rows = new ArrayList<>();
+		for (int i = 0; i < 15; i++) {
+			rows.add(List.of("hi" + i, "100"));
+		}
+		rows.add(List.of("lowA", "2"));
+		rows.add(List.of("lowA", "4"));
+		rows.add(List.of("lowB", "6"));
+		Table s = snapshot(List.of("k", "v"), List.of("varchar", "int"), rows);
+		ChartData.Bar bar = (ChartData.Bar) ChartBuilder.build(
+				new ChartSpec.Bar(0, 1, Aggregate.AVG, null, false, CategoryOrder.VALUE_DESC), s, 400);
+		assertEquals(4.0, bar.values()[0][index(bar, "Other")], 1e-9,
+				"Other averages the folded rows, combining raw accumulators");
+	}
+
+	@Test
+	void statCountOverATruncatedResultIsFlagged() {
+		// A COUNT over a source that was already capped upstream must NOT present itself as the complete total.
+		Table truncated = new Table(List.of("k"), List.of("varchar"),
+				List.of(List.of("a"), List.of("b"), List.of("c")), true);
+		ChartData.Stat stat = (ChartData.Stat) ChartBuilder.build(new ChartSpec.Stat(null, Aggregate.COUNT),
+				truncated, 400);
+		assertEquals(3.0, stat.value(), 1e-9);
+		assertTrue(stat.provenance().hasNotice(), "a COUNT of a truncated sample must be flagged, not shown as total");
+	}
+
+	@Test
+	void stackedBarsRejectNegativeValues() {
+		// Stacking grows from zero, so a negative segment would silently corrupt the stack — reject it instead.
+		List<List<String>> rows = List.of(
+				List.of("a", "x", "10"), List.of("a", "y", "-3"), List.of("b", "x", "5"));
+		Table s = snapshot(List.of("cat", "ser", "v"), List.of("varchar", "varchar", "int"), rows);
+		assertThrows(ChartDataException.class, () -> ChartBuilder.build(
+				new ChartSpec.Bar(0, 2, Aggregate.SUM, 1, true), s, 400), "stacked + negative must be rejected");
+	}
+
+	@Test
 	void barRefusesRunawayCardinality() {
 		List<List<String>> rows = new ArrayList<>();
 		for (int i = 0; i < ChartLimits.MAX_CATEGORY_SCAN + 50; i++) {

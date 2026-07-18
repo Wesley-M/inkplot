@@ -173,8 +173,10 @@ public final class BarRenderer implements MarkRenderer {
 				double cursor = baseline;
 				for (int s = 0; s < series; s++) {
 					double top = yScale.map(cumulative(c, s + 1));
-					double segTop = Math.min(top + (s == 0 ? 0 : gap), cursor);
-					out.add(new BarRect(s, c, new Rectangle2D.Double(x, segTop, barW, Math.max(0, cursor - segTop))));
+					// The 2px separator sits on the NEAR (lower) end, so every segment's TOP lands exactly on its
+					// cumulative pixel — the topmost segment ends precisely at map(total), not 2px short.
+					double bottom = s == 0 ? cursor : Math.max(top, cursor - gap);
+					out.add(new BarRect(s, c, new Rectangle2D.Double(x, top, barW, Math.max(0, bottom - top))));
 					cursor = top;
 				}
 			}

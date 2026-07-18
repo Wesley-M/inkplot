@@ -877,7 +877,8 @@ public final class ChartCanvas extends JComponent {
 					yBounds[0] > 0 ? yBounds[0] : ym.positiveMin());
 		}
 		boolean log = yBands == null && yScaleMode == YScale.LOG && ym.allowLog();
-		YTicks yticks = yBands == null ? yTicks(ym, log, Math.max(2, h / ChartStyle.px(44))) : null;
+		boolean exactBounds = yBounds != null && yBands == null;   // pinned bounds get their exact domain, not a nice one
+		YTicks yticks = yBands == null ? yTicks(ym, log, Math.max(2, h / ChartStyle.px(44)), exactBounds) : null;
 		// A band Y (horizontal bars) sizes its gutter from the real category names — the point of the orientation —
 		// capped so a monster label can't push the plot off the surface.
 		int maxYLabel = yBands != null ? Math.min(maxWidth(fm, yBands), Math.max(ChartStyle.px(80), w / 3))
@@ -1010,13 +1011,34 @@ public final class ChartCanvas extends JComponent {
 
 	private record YTicks(double domainMin, double domainMax, double[] values, String[] labels) { }
 
-	private YTicks yTicks(YAxisModel ym, boolean log, int target) {
+	private YTicks yTicks(YAxisModel ym, boolean log, int target, boolean exact) {
 		if (log) {
 			LogTicks.Result r = LogTicks.of(ym.positiveMin(), ym.max());
-			return new YTicks(r.niceMin(), r.niceMax(), r.values(), r.labels());
+			return exact ? exactTicks(ym.positiveMin(), ym.max(), r.values(), r.labels())
+					: new YTicks(r.niceMin(), r.niceMax(), r.values(), r.labels());
 		}
 		NiceTicks.Result r = NiceTicks.linear(ym.min(), ym.max(), target);
-		return new YTicks(r.niceMin(), r.niceMax(), r.values(), AxisRenderer.labelsFor(r));
+		String[] labels = AxisRenderer.labelsFor(r);
+		return exact ? exactTicks(ym.min(), ym.max(), r.values(), labels)
+				: new YTicks(r.niceMin(), r.niceMax(), r.values(), labels);
+	}
+
+	// Manual bounds pin the domain EXACTLY to [lo, hi] (never the widened "nice" range), keeping only the nice tick
+	// values that fall inside — so a pinned axis honours its limits instead of re-exposing the data it cropped out.
+	private static YTicks exactTicks(double lo, double hi, double[] values, String[] labels) {
+		java.util.List<Double> keptValues = new java.util.ArrayList<>();
+		java.util.List<String> keptLabels = new java.util.ArrayList<>();
+		for (int i = 0; i < values.length; i++) {
+			if (values[i] >= lo - 1e-9 && values[i] <= hi + 1e-9) {
+				keptValues.add(values[i]);
+				keptLabels.add(labels[i]);
+			}
+		}
+		double[] out = new double[keptValues.size()];
+		for (int i = 0; i < out.length; i++) {
+			out[i] = keptValues.get(i);
+		}
+		return new YTicks(lo, hi, out, keptLabels.toArray(new String[0]));
 	}
 
 	private record XBuild(Scale scale, double[] tickPixels, String[] tickLabels) { }

@@ -65,7 +65,9 @@ public final class ChartBuilder {
 		Aggregate agg = spec.agg() == null ? Aggregate.COUNT : spec.agg();
 		if (agg == Aggregate.COUNT || spec.value() == null) {
 			int rows = s.rows().size();
-			return new ChartData.Stat(rows, "Count", true, Provenance.full(rows));
+			// Thread the source's truncation flag (unlike Provenance.full, which asserts "complete") so a COUNT over
+			// an already-capped result is shown as a count of a SAMPLE, never as the true total.
+			return new ChartData.Stat(rows, "Count", true, new Provenance(rows, rows, s.truncated(), 0, null));
 		}
 		ChartExtract.Column col = ChartExtract.numeric(s.rows(), spec.value(), ChartLimits.MAX_VALUES_PER_COLUMN);
 		double[] v = col.values();
@@ -94,35 +96,57 @@ public final class ChartBuilder {
 		// Colouring bars by their own category (series == the category column) is one full-width bar per category,
 		// each a distinct colour — not a grouped bar split into empty per-series slots.
 		boolean colorByCategory = spec.series() != null && spec.series().equals(spec.x());
-		CategoryKeyer cats = new CategoryKeyer(ChartLimits.MAX_CATEGORY_SCAN);
-		CategoryKeyer seriesKeyer = spec.series() != null && !colorByCategory
-				? new CategoryKeyer(ChartLimits.MAX_CATEGORY_SCAN) : null;
-		for (List<String> row : rows) {
-			cats.observe(cell(row, spec.x()));
-			if (seriesKeyer != null) {
-				seriesKeyer.observe(cell(row, spec.series()));
-			}
-		}
+		CategoryKeyer cats = observe(rows, spec.x());
 		if (cats.overflowed()) {
 			throw new ChartDataException("Too many distinct values in "
 					+ s.columnName(spec.x()) + " to chart as bars — try a histogram or aggregate in SQL.");
 		}
-		Resolved catR = cats.resolve(ChartLimits.MAX_CATEGORIES);
+		CategoryKeyer seriesKeyer = spec.series() != null && !colorByCategory ? observe(rows, spec.series()) : null;
+		// Every category gets a slot up front; the tail folds to "Other" AFTER aggregation, ranked by value.
+		Resolved catR = cats.resolve(Integer.MAX_VALUE);
 		Resolved serR = seriesKeyer != null ? seriesKeyer.resolve(ChartLimits.MAX_SERIES) : null;
-		int nCat = catR.labels().length;
 		int nSer = serR != null ? serR.labels().length : 1;
 
-		double[][] sum = new double[nSer][nCat];
-		long[][] count = new long[nSer][nCat];
-		double[][] min = new double[nSer][nCat];
-		double[][] max = new double[nSer][nCat];
-		for (double[] r : min) {
-			java.util.Arrays.fill(r, Double.POSITIVE_INFINITY);
-		}
-		for (double[] r : max) {
-			java.util.Arrays.fill(r, Double.NEGATIVE_INFINITY);
-		}
+		Agg all = new Agg(nSer, catR.labels().length);
+		int skipped = accumulate(rows, spec, catR, serR, all);
+		CategoryAxis axis = foldByValue(catR.labels(), all, spec.agg(), nSer, ChartLimits.MAX_CATEGORIES)
+				.reordered(order -> categoryOrder(spec.order(), order.labels(), order.values(), order.otherSlot()));
 
+		boolean stacked = spec.stacked() && nSer > 1;
+		if (stacked) {
+			rejectNegatives(axis.values(), s.columnName(spec.y()));   // stacking from a zero baseline needs them all >= 0
+		}
+		String[] seriesNames = serR != null ? serR.labels()
+				: new String[] { spec.agg() == Aggregate.COUNT ? "Count" : s.columnName(spec.y()) };
+		Provenance prov = new Provenance(rows.size() - skipped, rows.size(), s.truncated(), skipped, null);
+		return new ChartData.Bar(axis.labels(), seriesNames, axis.values(),
+				stacked, colorByCategory, spec.horizontal(), prov);
+	}
+
+	// Stacked bars grow from a zero baseline, so a negative segment has nowhere to sit — reject it with a clear
+	// message (grouped bars handle negatives fine), mirroring the non-negative guard the shares charts use.
+	private static void rejectNegatives(double[][] values, String column) {
+		for (double[] series : values) {
+			for (double v : series) {
+				if (v < 0) {
+					throw new ChartDataException("Stacked bars need non-negative values, but " + column
+							+ " has negatives — un-stack the bars, or filter the negatives out.");
+				}
+			}
+		}
+	}
+
+	/** Observe every row's value in column {@code col} into a fresh {@link CategoryKeyer}. */
+	private static CategoryKeyer observe(List<List<String>> rows, int col) {
+		CategoryKeyer keyer = new CategoryKeyer(ChartLimits.MAX_CATEGORY_SCAN);
+		for (List<String> row : rows) {
+			keyer.observe(cell(row, col));
+		}
+		return keyer;
+	}
+
+	/** Tally each row into its (series, category) slot; returns the rows skipped for a non-numeric measure. */
+	private static int accumulate(List<List<String>> rows, ChartSpec.Bar spec, Resolved catR, Resolved serR, Agg grid) {
 		Aggregate agg = spec.agg();
 		int skipped = 0;
 		for (List<String> row : rows) {
@@ -130,10 +154,7 @@ public final class ChartBuilder {
 			if (c < 0) {
 				continue;
 			}
-			int ser = serR != null ? serR.slotOf(cell(row, spec.series())) : 0;
-			if (ser < 0) {
-				ser = 0;
-			}
+			int ser = serR != null ? Math.max(0, serR.slotOf(cell(row, spec.series()))) : 0;
 			double value = 1;
 			if (agg != Aggregate.COUNT) {
 				Double d = numeric(cell(row, spec.y()));
@@ -143,34 +164,155 @@ public final class ChartBuilder {
 				}
 				value = d;
 			}
-			sum[ser][c] += value;
-			count[ser][c]++;
-			min[ser][c] = Math.min(min[ser][c], value);
-			max[ser][c] = Math.max(max[ser][c], value);
+			grid.add(ser, c, value);
 		}
+		return skipped;
+	}
 
-		double[][] values = new double[nSer][nCat];
-		for (int ser = 0; ser < nSer; ser++) {
-			for (int c = 0; c < nCat; c++) {
-				values[ser][c] = finalizeAggregate(agg, sum[ser][c], count[ser][c], min[ser][c], max[ser][c]);
+	/**
+	 * Reduce all categories to the biggest {@code maxCategories} by aggregated value, the tail combined into a
+	 * single "Other". Membership is decided by value (so a rare-but-huge category is kept, never folded away), but
+	 * the kept categories stay in scan order so a later SOURCE/LABEL sort still has the source order to work from.
+	 */
+	private static CategoryAxis foldByValue(String[] labels, Agg all, Aggregate agg, int nSer, int maxCategories) {
+		int nAll = labels.length;
+		double[] total = new double[nAll];
+		for (int c = 0; c < nAll; c++) {
+			total[c] = all.total(agg, c);
+		}
+		Integer[] byValue = new Integer[nAll];
+		for (int c = 0; c < nAll; c++) {
+			byValue[c] = c;
+		}
+		// Membership is by MAGNITUDE, so a big negative bar (e.g. SUM(profit) = −1M) is kept, not folded into
+		// "Other" for being "smallest"; the display order (categoryOrder) still ranks by signed value.
+		java.util.Arrays.sort(byValue, (a, b) -> Double.compare(Math.abs(total[b]), Math.abs(total[a])));
+
+		int keep = nAll > maxCategories ? maxCategories - 1 : nAll;
+		boolean hasOther = nAll > keep;
+		java.util.Set<Integer> kept = new java.util.HashSet<>(byValue.length);
+		for (int i = 0; i < keep; i++) {
+			kept.add(byValue[i]);
+		}
+		List<Integer> keptInOrder = new ArrayList<>();
+		for (int c = 0; c < nAll; c++) {
+			if (kept.contains(c)) {
+				keptInOrder.add(c);
 			}
 		}
 
-		int[] order = categoryOrder(spec.order(), catR.labels(), values, catR.otherIndex());
-		String[] categories = new String[nCat];
-		double[][] ordered = new double[nSer][nCat];
-		for (int i = 0; i < nCat; i++) {
-			categories[i] = catR.labels()[order[i]];
-			for (int ser = 0; ser < nSer; ser++) {
-				ordered[ser][i] = values[ser][order[i]];
+		int otherSlot = hasOther ? keptInOrder.size() : -1;
+		Agg folded = new Agg(nSer, keptInOrder.size() + (hasOther ? 1 : 0));
+		String[] outLabels = new String[folded.slots()];
+		for (int i = 0; i < keptInOrder.size(); i++) {
+			int c = keptInOrder.get(i);
+			outLabels[i] = labels[c];
+			all.mergeInto(folded, i, c);
+		}
+		if (hasOther) {
+			outLabels[otherSlot] = CategoryKeyer.OTHER;
+			for (int c = 0; c < nAll; c++) {
+				if (!kept.contains(c)) {
+					all.mergeInto(folded, otherSlot, c);
+				}
+			}
+		}
+		return new CategoryAxis(outLabels, folded.values(agg), otherSlot);
+	}
+
+	/**
+	 * A grid of per-(series, slot) aggregation accumulators, finalized on demand. Keeping the raw accumulators
+	 * (not finished values) is what lets an "Other" fold combine categories correctly for every aggregate —
+	 * AVG/MIN/MAX over the combined rows, never a sum of already-averaged values.
+	 */
+	private static final class Agg {
+		private final int series;
+		private final int slots;
+		private final double[][] sum;
+		private final long[][] count;
+		private final double[][] min;
+		private final double[][] max;
+
+		Agg(int series, int slots) {
+			this.series = series;
+			this.slots = slots;
+			sum = new double[series][slots];
+			count = new long[series][slots];
+			min = new double[series][slots];
+			max = new double[series][slots];
+			for (double[] r : min) {
+				java.util.Arrays.fill(r, Double.POSITIVE_INFINITY);
+			}
+			for (double[] r : max) {
+				java.util.Arrays.fill(r, Double.NEGATIVE_INFINITY);
 			}
 		}
 
-		String[] seriesNames = serR != null ? serR.labels()
-				: new String[] { agg == Aggregate.COUNT ? "Count" : s.columnName(spec.y()) };
-		Provenance prov = new Provenance(rows.size() - skipped, rows.size(), s.truncated(), skipped, null);
-		return new ChartData.Bar(categories, seriesNames, ordered, spec.stacked() && nSer > 1, colorByCategory,
-				spec.horizontal(), prov);
+		int slots() {
+			return slots;
+		}
+
+		void add(int ser, int slot, double v) {
+			sum[ser][slot] += v;
+			count[ser][slot]++;
+			min[ser][slot] = Math.min(min[ser][slot], v);
+			max[ser][slot] = Math.max(max[ser][slot], v);
+		}
+
+		/** Merge one of this grid's slots into a destination slot of {@code dest}, across every series. */
+		void mergeInto(Agg dest, int destSlot, int srcSlot) {
+			for (int ser = 0; ser < series; ser++) {
+				dest.sum[ser][destSlot] += sum[ser][srcSlot];
+				dest.count[ser][destSlot] += count[ser][srcSlot];
+				dest.min[ser][destSlot] = Math.min(dest.min[ser][destSlot], min[ser][srcSlot]);
+				dest.max[ser][destSlot] = Math.max(dest.max[ser][destSlot], max[ser][srcSlot]);
+			}
+		}
+
+		double value(Aggregate agg, int ser, int slot) {
+			return finalizeAggregate(agg, sum[ser][slot], count[ser][slot], min[ser][slot], max[ser][slot]);
+		}
+
+		double[][] values(Aggregate agg) {
+			double[][] out = new double[series][slots];
+			for (int ser = 0; ser < series; ser++) {
+				for (int slot = 0; slot < slots; slot++) {
+					out[ser][slot] = value(agg, ser, slot);
+				}
+			}
+			return out;
+		}
+
+		/** The across-series total for one slot — how "big" a category is, for the Other-fold ranking. */
+		double total(Aggregate agg, int slot) {
+			double t = 0;
+			for (int ser = 0; ser < series; ser++) {
+				t += value(agg, ser, slot);
+			}
+			return t;
+		}
+	}
+
+	/** A finished category axis: labels, per-series values, and the "Other" slot (−1 if none). */
+	private record CategoryAxis(String[] labels, double[][] values, int otherSlot) {
+
+		/** Return a copy in the display order the {@code ordering} strategy computes from this axis. */
+		CategoryAxis reordered(java.util.function.Function<CategoryAxis, int[]> ordering) {
+			int[] order = ordering.apply(this);
+			String[] outLabels = new String[order.length];
+			double[][] outValues = new double[values.length][order.length];
+			int newOther = -1;
+			for (int i = 0; i < order.length; i++) {
+				outLabels[i] = labels[order[i]];
+				if (order[i] == otherSlot) {
+					newOther = i;
+				}
+				for (int ser = 0; ser < values.length; ser++) {
+					outValues[ser][i] = values[ser][order[i]];
+				}
+			}
+			return new CategoryAxis(outLabels, outValues, newOther);
+		}
 	}
 
 	// The category axis in the requested order — value sorts rank by the across-series total, and the folded
@@ -333,6 +475,7 @@ public final class ChartBuilder {
 		int nSer = serR != null ? serR.labels().length : 1;
 
 		int skipped = 0;
+		int capped = 0;
 		List<ChartData.Line.Series> out = new ArrayList<>();
 		if (spec.agg() == null) {
 			DoubleList[] xs = news(nSer);
@@ -349,8 +492,14 @@ public final class ChartBuilder {
 				if (ser < 0) {
 					ser = 0;
 				}
-				xs[ser].add(x);
-				ys[ser].add(y);
+				// x and y share one cap and advance in lockstep; only add y if x had room, so a dropped point is
+				// counted (not silently lost) and the two axes never drift out of alignment.
+				if (xs[ser].add(x)) {
+					ys[ser].add(y);
+				}
+				else {
+					capped++;
+				}
 			}
 			for (int ser = 0; ser < nSer; ser++) {
 				out.add(sortedSeries(name(serR, ser, s, spec.y()), xs[ser].toArray(), ys[ser].toArray()));
@@ -389,7 +538,9 @@ public final class ChartBuilder {
 				out.add(new ChartData.Line.Series(name(serR, ser, s, spec.y()), x, y));
 			}
 		}
-		Provenance prov = new Provenance(rows.size() - skipped, rows.size(), s.truncated(), skipped, null);
+		String capNote = capped > 0 ? "charted the first " + ChartFormat.grouped(ChartLimits.MAX_VALUES_PER_COLUMN)
+				+ " points per series" : null;
+		Provenance prov = new Provenance(rows.size() - skipped - capped, rows.size(), s.truncated(), skipped, capNote);
 		return new ChartData.Line(out.toArray(new ChartData.Line.Series[0]), xTime, prov);
 	}
 
@@ -521,6 +672,7 @@ public final class ChartBuilder {
 		Resolved resolved = keyer.resolve(ChartLimits.MAX_CATEGORIES);
 		DoubleList[] buckets = news(resolved.labels().length);
 		int skipped = 0;
+		int capped = 0;
 		for (List<String> row : s.rows()) {
 			int slot = resolved.slotOf(cell(row, spec.group()));
 			Double v = numeric(cell(row, spec.value()));
@@ -528,13 +680,17 @@ public final class ChartBuilder {
 				skipped++;
 				continue;
 			}
-			buckets[slot].add(v);
+			if (!buckets[slot].add(v)) {
+				capped++;   // this group hit the per-group value cap; count the drop rather than lose it silently
+			}
 		}
 		ChartData.Box.Group[] groups = new ChartData.Box.Group[resolved.labels().length];
 		for (int i = 0; i < groups.length; i++) {
 			groups[i] = BoxStats.summarize(resolved.labels()[i], buckets[i].toArray(), ChartLimits.MAX_BOX_OUTLIERS);
 		}
-		Provenance prov = new Provenance(s.rowCount() - skipped, s.rowCount(), s.truncated(), skipped, null);
+		String capNote = capped > 0 ? "summarised the first " + ChartFormat.grouped(ChartLimits.MAX_VALUES_PER_COLUMN)
+				+ " values per group" : null;
+		Provenance prov = new Provenance(s.rowCount() - skipped - capped, s.rowCount(), s.truncated(), skipped, capNote);
 		return new ChartData.Box(groups, prov);
 	}
 

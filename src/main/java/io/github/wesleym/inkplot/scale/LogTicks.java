@@ -24,7 +24,10 @@ public final class LogTicks {
 		double a = positiveFinite(min, 1);
 		double b = positiveFinite(max, 10);
 		double lo = Math.min(a, b);
-		double hi = Math.max(lo * 10, Math.max(a, b));
+		double actualHi = Math.max(a, b);
+		// Only widen to a full decade for a DEGENERATE (single-value) range; a real sub-decade span like [20, 90]
+		// keeps its own top so the axis doesn't balloon to two decades and strand the data in the bottom third.
+		double hi = actualHi > lo ? actualHi : lo * 10;
 		int loExp = (int) Math.floor(Math.log10(lo));
 		int hiExp = (int) Math.ceil(Math.log10(hi));
 		double niceMin = Math.pow(10, loExp);

@@ -635,6 +635,10 @@ public final class ChartCanvas extends JComponent {
 			applyHints(bg);
 			bg.scale(dpr, dpr);
 			capturingLegendHits = true;          // capture legend hit rects from this on-screen bake only
+			// Clear here (not inside drawLegend) so a hidden legend leaves NO stale hit rects — otherwise hovering a
+			// bar over where the legend used to be would still fire the legend's series-highlight.
+			legendHitRects.clear();
+			legendHitSeries.clear();
 			paintChart(bg, w, h, introReveal);   // reveal < 1 only mid-entry-animation
 			capturingLegendHits = false;
 			bg.dispose();

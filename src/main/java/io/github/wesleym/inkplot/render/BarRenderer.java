@@ -49,6 +49,10 @@ public final class BarRenderer implements MarkRenderer {
 					double v = data.values()[s][c];
 					sum += v;
 					hasNegative |= v < 0;
+					hasPositive |= v > 0;
+					if (v > 0) {
+						positiveMin = Math.min(positiveMin, v);
+					}
 				}
 				max = Math.max(max, sum);
 			}
@@ -67,8 +71,9 @@ public final class BarRenderer implements MarkRenderer {
 			}
 		}
 		// Bars read against a zero baseline; a log value axis is offered when there are no negatives (zero bars just
-		// sit at the floor) and the bars aren't stacked, flooring at the smallest positive bar.
-		boolean allowLog = !hasNegative && hasPositive && !data.stacked();
+		// sit at the floor), flooring at the smallest positive value. A stack maps fine to log too: each segment top
+		// sits at log(cumulative sum), so the bar spans floor..log(total) partitioned by cumulative contribution.
+		boolean allowLog = !hasNegative && hasPositive;
 		return YAxisModel.loggable(min, max, allowLog, positiveMin);
 	}
 

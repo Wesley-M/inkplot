@@ -32,8 +32,10 @@ final class ChartLimits {
 	 *  readable with the most categories of the share charts. Same picker override as the doughnut. */
 	public static final int MAX_TREEMAP_TILES = 24;
 
-	/** Hard stop on category discovery — past this a column is not category-like and the chart says so. */
-	public static final int MAX_CATEGORY_SCAN = MAX_CATEGORIES * 25;
+	/** Hard stop on category discovery — past this a column is not category-like and the chart says so. Fixed
+	 *  (not derived from the fold cap) so tightening how many bars we draw never changes what counts as a
+	 *  category: a 300-value column is still chartable, its tail just folds into "Other". */
+	public static final int MAX_CATEGORY_SCAN = 1000;
 
 	/** Max series slots before the tail folds into "Other". Past its base eight the theme generates colours along
 	 *  two axes — golden-angle hue rotation crossed with lighter/vivid/deeper shade tiers — so slots stay
